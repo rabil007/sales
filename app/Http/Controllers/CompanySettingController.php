@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CompanySetting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class CompanySettingController extends Controller
@@ -25,7 +26,19 @@ class CompanySettingController extends Controller
         $data = $request->validate([
             'settings' => ['required', 'array'],
             'settings.*' => ['nullable', 'string', 'max:500'],
+            'app_logo' => ['nullable', 'image', 'max:2048'],
         ]);
+
+        if ($request->hasFile('app_logo')) {
+            $currentLogoPath = CompanySetting::get('app_logo_path', 'overseas-marine logo.png');
+            $newLogoPath = $request->file('app_logo')->store('app-branding', 'public');
+
+            if ($currentLogoPath !== '' && $currentLogoPath !== 'overseas-marine logo.png' && Storage::disk('public')->exists($currentLogoPath)) {
+                Storage::disk('public')->delete($currentLogoPath);
+            }
+
+            $data['settings']['app_logo_path'] = $newLogoPath;
+        }
 
         foreach ($data['settings'] as $key => $value) {
             CompanySetting::query()

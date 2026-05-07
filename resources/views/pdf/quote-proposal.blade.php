@@ -75,15 +75,16 @@
 </head>
 <body>
     @php
+        // ── Company settings ────────────────────────────────────────
+        $cs = \App\Models\CompanySetting::allKeyed();
+
         // ── Logo ────────────────────────────────────────────────────
-        $logoAbsolutePath = storage_path('app/public/overseas-marine logo.png');
+        $appLogoPath = $cs['app_logo_path'] ?? 'overseas-marine logo.png';
+        $logoAbsolutePath = storage_path('app/public/'.$appLogoPath);
         $logoDataUri = null;
         if (is_file($logoAbsolutePath)) {
             $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoAbsolutePath));
         }
-
-        // ── Company settings ────────────────────────────────────────
-        $cs = \App\Models\CompanySetting::allKeyed();
         $companyName      = $cs['company_name']       ?? 'Overseas Marine Services';
         $companyLegalName = $cs['company_legal_name'] ?? $companyName;
         $companyAddress   = $cs['company_address']    ?? '';

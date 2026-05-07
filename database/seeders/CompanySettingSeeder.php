@@ -11,6 +11,8 @@ class CompanySettingSeeder extends Seeder
     {
         $settings = [
             // Company identity
+            ['key' => 'app_name',            'label' => 'Application Name',                'group' => 'application',    'value' => 'OMS Sales'],
+            ['key' => 'app_logo_path',       'label' => 'Application Logo Path',           'group' => 'application',    'value' => 'overseas-marine logo.png'],
             ['key' => 'company_name',        'label' => 'Company Name',                    'group' => 'identity',       'value' => 'Overseas Marine Services'],
             ['key' => 'company_legal_name',  'label' => 'Legal Name',                      'group' => 'identity',       'value' => 'Overseas Marine Services-Sole Proprietorship LLC'],
 
