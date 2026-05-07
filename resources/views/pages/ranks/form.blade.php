@@ -1,5 +1,5 @@
 <x-layouts::app :title="$isEdit ? __('Edit Rank') : __('New Rank')">
-    <div class="mx-auto max-w-3xl space-y-4">
+    <div class="mx-auto max-w-4xl space-y-6">
         @if (session('status'))
             <flux:callout icon="check-circle" color="emerald">{{ session('status') }}</flux:callout>
         @endif
@@ -8,16 +8,25 @@
             <flux:callout icon="exclamation-triangle" color="red">Please review rank details and try again.</flux:callout>
         @endif
 
-        <div class="flex items-center justify-between">
-            <flux:heading size="lg">{{ $isEdit ? 'Edit Rank' : 'Create Rank' }}</flux:heading>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <flux:heading size="lg">{{ $isEdit ? 'Edit Rank' : 'Create Rank' }}</flux:heading>
+                <flux:text class="text-zinc-500">
+                    {{ $isEdit ? 'Update default values used while adding crew lines.' : 'Create a reusable rank template for quote crew lines.' }}
+                </flux:text>
+            </div>
             <flux:button variant="ghost" icon="arrow-left" :href="route('ranks.index')" wire:navigate>Back to list</flux:button>
         </div>
 
-        <form method="POST" action="{{ $isEdit ? route('ranks.update', $rank) : route('ranks.store') }}" class="space-y-4 rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
+        <form method="POST" action="{{ $isEdit ? route('ranks.update', $rank) : route('ranks.store') }}" class="space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
             @csrf
             @if ($isEdit)
                 @method('PUT')
             @endif
+
+            <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-300">
+                These defaults auto-fill on quote crew lines and can still be adjusted per line when preparing agreements.
+            </div>
 
             <div class="grid gap-4 md:grid-cols-2">
                 <flux:input name="name" label="Rank Name" :value="old('name', $rank->name)" required />
@@ -35,13 +44,25 @@
                 <flux:label>Active</flux:label>
             </flux:field>
 
+            <flux:separator />
+
             <div class="flex items-center justify-between">
                 @if ($isEdit)
-                    <button form="delete-rank-form" class="inline-flex items-center rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950">Delete</button>
+                    <flux:button
+                        variant="danger"
+                        type="button"
+                        icon="trash"
+                        x-data
+                        x-on:click="if (confirm('Delete this rank? This action cannot be undone.')) document.getElementById('delete-rank-form').submit()"
+                    >
+                        Delete
+                    </flux:button>
                 @else
                     <div></div>
                 @endif
-                <flux:button variant="primary" type="submit">{{ $isEdit ? 'Update Rank' : 'Save Rank' }}</flux:button>
+                <flux:button variant="primary" type="submit" icon="check">
+                    {{ $isEdit ? 'Update Rank' : 'Save Rank' }}
+                </flux:button>
             </div>
         </form>
 

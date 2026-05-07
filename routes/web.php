@@ -17,6 +17,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('quotes/{quote}/renew', [QuoteController::class, 'renew'])->name('quotes.renew');
     Route::resource('clients', ClientController::class)->except('show');
     Route::resource('ranks', RankController::class)->except('show');
+    Route::patch('ranks/{rank}/toggle-status', [RankController::class, 'toggleStatus'])->name('ranks.toggle-status');
 });
 
 require __DIR__.'/settings.php';
