@@ -189,7 +189,9 @@
                 {{-- Tab: Preview --}}
                 <div data-tab-content="preview" class="tab-content hidden p-6 space-y-4">
                     <div class="flex justify-end">
-                        <flux:button variant="filled" type="button" onclick="window.print()">Print / Export PDF</flux:button>
+                        @if ($isEdit)
+                            <flux:button variant="filled" :href="route('quotes.export', $quote)">Print / Export PDF</flux:button>
+                        @endif
                     </div>
                     <div id="preview-pane" class="rounded-lg border border-zinc-200 p-6 dark:border-zinc-700"></div>
                 </div>

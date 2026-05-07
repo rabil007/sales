@@ -104,6 +104,21 @@ test('user can update quote and filter list', function () {
     $this->get(route('quotes.index', ['status' => 'Sent']))->assertSee('OMS-Q-2026-201');
 });
 
+test('user can export quote as pdf', function () {
+    $this->actingAs(User::factory()->create());
+
+    $quote = Quote::factory()->create([
+        'doc_no' => 'OMS-Q-2026-777',
+        'issue_date' => now()->toDateString(),
+        'client_name' => 'ADNOC Offshore',
+    ]);
+
+    $response = $this->get(route('quotes.export', $quote));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('application/pdf');
+});
+
 test('user can use workflow transitions and renew agreement', function () {
     $this->actingAs(User::factory()->create());
 

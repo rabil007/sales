@@ -7,7 +7,7 @@
             </div>
             <div class="flex items-center gap-2">
                 <flux:button variant="ghost" icon="pencil" :href="route('quotes.edit', $quote)" wire:navigate>Edit Quote</flux:button>
-                <flux:button variant="primary" icon="printer" onclick="window.print()" type="button">Print / Export PDF</flux:button>
+                <flux:button variant="primary" icon="printer" :href="route('quotes.export', $quote)">Print / Export PDF</flux:button>
             </div>
         </div>
 

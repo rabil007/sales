@@ -6,9 +6,11 @@ use App\Http\Requests\QuoteRequest;
 use App\Models\Client;
 use App\Models\Quote;
 use App\Models\Rank;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
@@ -161,6 +163,19 @@ class QuoteController extends Controller
         $quote->load(['crewLines', 'client']);
 
         return view('pages.quotes.show', ['quote' => $quote]);
+    }
+
+    public function exportPdf(Quote $quote): Response
+    {
+        $quote->load(['crewLines', 'client']);
+
+        $pdf = Pdf::loadView('pdf.quote-proposal', [
+            'quote' => $quote,
+            'today' => now(),
+            'terms' => is_array($quote->terms) ? $quote->terms : [],
+        ])->setPaper('a4');
+
+        return $pdf->download($quote->doc_no.'-proposal.pdf');
     }
 
     /**
