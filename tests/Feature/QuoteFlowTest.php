@@ -11,6 +11,9 @@ test('authenticated user can view quote pages', function () {
 
     $this->get(route('dashboard'))->assertSuccessful();
     $this->get(route('quotes.index'))->assertSuccessful();
+    $this->get(route('quotes.index', ['per_page' => 10]))
+        ->assertSuccessful()
+        ->assertSee('10 / page');
     $this->get(route('quotes.create'))
         ->assertSuccessful()
         ->assertSee('Master');

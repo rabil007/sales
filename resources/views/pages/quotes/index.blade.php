@@ -25,7 +25,7 @@
         </div>
 
         {{-- Filters --}}
-        <form method="GET" class="grid gap-3 rounded-xl border border-zinc-200 bg-white p-4 md:grid-cols-4 dark:border-zinc-700 dark:bg-zinc-900">
+        <form method="GET" class="grid gap-3 rounded-xl border border-zinc-200 bg-white p-4 md:grid-cols-3 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:input
                 name="q"
                 :value="$q"
@@ -38,14 +38,9 @@
                     <option value="{{ $statusOption }}" @selected($status === $statusOption)>{{ $statusOption }}</option>
                 @endforeach
             </flux:select>
-            <flux:select name="per_page">
-                @foreach ([10, 15, 25, 50] as $size)
-                    <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} / page</option>
-                @endforeach
-            </flux:select>
             <div class="flex items-center gap-2">
                 <flux:button type="submit" variant="filled" icon="funnel">Filter</flux:button>
-                @if($q !== '' || $status !== '' || $perPage !== 15)
+                @if ($q !== '' || $status !== '' || $perPage !== 15)
                     <flux:button :href="route('quotes.index')" variant="ghost" wire:navigate>Clear</flux:button>
                 @endif
             </div>
@@ -131,6 +126,28 @@
                     </tbody>
                 </table>
             </div>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/80 p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40">
+                <p>
+                    Showing {{ $quotes->firstItem() ?? 0 }}-{{ $quotes->lastItem() ?? 0 }} of {{ $quotes->total() }} quotes
+                </p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <form method="GET" action="{{ route('quotes.index') }}" class="flex items-center gap-2">
+                        @if ($q !== '')
+                            <input type="hidden" name="q" value="{{ $q }}">
+                        @endif
+                        @if ($status !== '')
+                            <input type="hidden" name="status" value="{{ $status }}">
+                        @endif
+                        <flux:select name="per_page" size="sm" onchange="this.form.submit()">
+                            @foreach ([10, 15, 25, 50] as $size)
+                                <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} / page</option>
+                            @endforeach
+                        </flux:select>
+                    </form>
+                    <span>Page {{ $quotes->currentPage() }} of {{ $quotes->lastPage() }}</span>
+                    {{ $quotes->withQueryString()->links() }}
+                </div>
+            </div>
         </div>
 
         @foreach ($quotes as $quote)
@@ -157,15 +174,5 @@
                 </div>
             </flux:modal>
         @endforeach
-
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900">
-            <p>
-                Showing {{ $quotes->firstItem() ?? 0 }}-{{ $quotes->lastItem() ?? 0 }} of {{ $quotes->total() }} quotes
-            </p>
-            <div class="flex flex-wrap items-center gap-3">
-                <span>Page {{ $quotes->currentPage() }} of {{ $quotes->lastPage() }}</span>
-                {{ $quotes->withQueryString()->links() }}
-            </div>
-        </div>
     </div>
 </x-layouts::app>

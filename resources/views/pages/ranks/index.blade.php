@@ -121,6 +121,34 @@
                     </tbody>
                 </table>
             </div>
+            <div class="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/80 p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40">
+                <p>
+                    Showing {{ $ranks->firstItem() ?? 0 }}-{{ $ranks->lastItem() ?? 0 }} of {{ $ranks->total() }} ranks
+                </p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <form method="GET" action="{{ route('ranks.index') }}" class="flex items-center gap-2">
+                        @if ($q !== '')
+                            <input type="hidden" name="q" value="{{ $q }}">
+                        @endif
+                        @if ($category !== '')
+                            <input type="hidden" name="category" value="{{ $category }}">
+                        @endif
+                        @if ($basis !== '')
+                            <input type="hidden" name="basis" value="{{ $basis }}">
+                        @endif
+                        @if ($status !== '')
+                            <input type="hidden" name="status" value="{{ $status }}">
+                        @endif
+                        <flux:select name="per_page" size="sm" onchange="this.form.submit()">
+                            @foreach ([10, 15, 25, 50] as $size)
+                                <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} / page</option>
+                            @endforeach
+                        </flux:select>
+                    </form>
+                    <span>Page {{ $ranks->currentPage() }} of {{ $ranks->lastPage() }}</span>
+                    {{ $ranks->withQueryString()->links() }}
+                </div>
+            </div>
         </div>
 
         @foreach ($ranks as $rank)
@@ -147,26 +175,5 @@
                 </div>
             </flux:modal>
         @endforeach
-
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900">
-            <p>
-                Showing {{ $ranks->firstItem() ?? 0 }}-{{ $ranks->lastItem() ?? 0 }} of {{ $ranks->total() }} ranks
-            </p>
-            <div class="flex flex-wrap items-center gap-3">
-                <form method="GET" class="flex items-center gap-2">
-                    <input type="hidden" name="q" value="{{ $q }}">
-                    <input type="hidden" name="category" value="{{ $category }}">
-                    <input type="hidden" name="basis" value="{{ $basis }}">
-                    <input type="hidden" name="status" value="{{ $status }}">
-                    <flux:select name="per_page" size="sm" onchange="this.form.submit()">
-                        @foreach ([10, 15, 25, 50] as $size)
-                            <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} / page</option>
-                        @endforeach
-                    </flux:select>
-                </form>
-                <span>Page {{ $ranks->currentPage() }} of {{ $ranks->lastPage() }}</span>
-                {{ $ranks->links() }}
-            </div>
-        </div>
     </div>
 </x-layouts::app>

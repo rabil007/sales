@@ -22,6 +22,9 @@
                 <flux:navbar.item icon="user-group" :href="route('ranks.index')" :current="request()->routeIs('ranks.*')" wire:navigate>
                     {{ __('Ranks') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="cog-6-tooth" :href="route('branding.edit')" :current="request()->routeIs('branding.*') || request()->routeIs('settings.company.*')" wire:navigate>
+                    {{ __('Settings') }}
+                </flux:navbar.item>
 
             </flux:navbar>
 
@@ -52,6 +55,11 @@
                         {{ __('Ranks')  }}
                     </flux:sidebar.item>
 
+                </flux:sidebar.group>
+                <flux:sidebar.group :heading="__('Settings')">
+                    <flux:sidebar.item icon="document-text" :href="route('settings.company.edit')" :current="request()->routeIs('settings.company.*')" wire:navigate>
+                        {{ __('Template Settings') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
