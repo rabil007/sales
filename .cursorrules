@@ -1,0 +1,18 @@
+We are building a Laravel 13 application.
+Tech Stack: PHP 8.3+, Livewire 4 (Standard & Volt), Flux UI, Tailwind CSS v4, Pest PHP.
+
+Rules for AI generation:
+
+# PHP & Livewire
+- Write modern PHP 8.3+ using typed properties, strict types, and arrow functions where appropriate.
+- Use Livewire 4 syntax (e.g., use #[Validate] and #[Computed] attributes).
+- Use Livewire Volt (single-file components) for simple UI views, and traditional Livewire Class/View pairs for complex logic like the QuoteBuilder.
+- Be efficient with data binding: prefer `wire:model.blur` or `wire:model.change` over `wire:model.live` to minimize server requests unless real-time validation is explicitly needed.
+
+# UI & Frontend
+- Strictly use Laravel Flux UI components (e.g., <flux:card>, <flux:input>, <flux:button>, <flux:table>) instead of writing raw HTML/Tailwind form elements.
+- Keep the UI design clean, minimal, and modern. Do not add arbitrary custom CSS if a Flux component or standard Tailwind utility can handle it.
+- Use Tailwind v4 syntax.
+
+# Testing
+- When writing tests, strictly use Pest PHP syntax (e.g., `it()`, `test()`, `expect()`) instead of PHPUnit classes.
