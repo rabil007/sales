@@ -26,6 +26,12 @@
                     </flux:sidebar.item>
 
                 </flux:sidebar.group>
+
+                <flux:sidebar.group :heading="__('Settings')" class="grid">
+                    <flux:sidebar.item icon="cog-6-tooth" :href="route('settings.company.edit')" :current="request()->routeIs('settings.company.*')" wire:navigate>
+                        {{ __('Company Settings') }}
+                    </flux:sidebar.item>
+                </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />

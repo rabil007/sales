@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\RankController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('clients', ClientController::class)->except('show');
     Route::resource('ranks', RankController::class)->except('show');
     Route::patch('ranks/{rank}/toggle-status', [RankController::class, 'toggleStatus'])->name('ranks.toggle-status');
+    Route::get('settings/company', [CompanySettingController::class, 'edit'])->name('settings.company.edit');
+    Route::put('settings/company', [CompanySettingController::class, 'update'])->name('settings.company.update');
 });
 
 require __DIR__.'/settings.php';

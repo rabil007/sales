@@ -15,7 +15,7 @@
         .logo-cell { width: 20%; text-align: center; }
         .logo-cell img { height: 38px; width: auto; }
         .title-cell { width: 45%; text-align: center; font-size: 11.5px; font-weight: 700; line-height: 1.5; }
-        .meta-cell { width: 35%; font-size: 10px; line-height: 1.6; }
+        .meta-cell { width: 35%; font-size: 10px; line-height: 1.7; }
         .meta-cell strong { font-weight: 700; }
 
         /* ── FOOTER ─────────────────────────────────────────────── */
@@ -62,19 +62,45 @@
 </head>
 <body>
     @php
+        use App\Models\CompanySetting;
+
+        // ── Logo ────────────────────────────────────────────────────
         $logoAbsolutePath = storage_path('app/public/overseas-marine logo.png');
         $logoDataUri = null;
         if (is_file($logoAbsolutePath)) {
             $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoAbsolutePath));
         }
 
-        $docNo = str_replace('-', '/', $quote->doc_no);
-        $dateStr = $today->format('d') . '<sup>' . $today->format('S') . '</sup> ' . $today->format('M Y');
+        // ── Company settings ────────────────────────────────────────
+        $cs = CompanySetting::allKeyed();
+        $companyName      = $cs['company_name']       ?? 'Overseas Marine Services';
+        $companyLegalName = $cs['company_legal_name'] ?? $companyName;
+        $companyAddress   = $cs['company_address']    ?? '';
+        $companyPhone     = $cs['company_phone']      ?? '';
+        $companyEmail     = $cs['company_email']      ?? '';
+        $companyWebsite   = $cs['company_website']    ?? '';
+        $signatoryName    = $cs['signatory_name']     ?? '';
+        $signatoryRole    = $cs['signatory_role']     ?? '';
+
+        // ── Quote fields ────────────────────────────────────────────
+        $docNo      = str_replace('-', '/', $quote->doc_no);
+        $issueDate  = optional($quote->issue_date)->format('d') . '<sup>' . optional($quote->issue_date)->format('S') . '</sup> ' . optional($quote->issue_date)->format('M Y');
         $clientName = $quote->client_name ?: 'Client Name';
-        $location = $quote->location ?: 'Abu Dhabi, UAE';
-        $subject = $quote->project_name ?: 'Crew Requirements';
-        $scope = $quote->scope ?: 'Source and Supply of appropriate crew who will be under Supplier payroll and seconded to Client. Rates provided as per Annex I';
-        $year = $today->year;
+        $location   = $quote->location ?: 'Abu Dhabi, UAE';
+        $subject    = $quote->project_name ?: 'Crew Requirements';
+        $scope      = $quote->scope ?: 'Source and Supply of appropriate crew who will be under Supplier payroll and seconded to Client. Rates provided as per Annex I';
+        $duration   = $quote->duration_text ?: 'One (1) year';
+        $vessel     = $quote->vessel;
+        $clientPo   = $quote->client_po;
+        $year       = optional($quote->issue_date)->year ?? now()->year;
+
+        // ── Client address block ────────────────────────────────────
+        $client              = $quote->client;
+        $toContactPerson     = $client?->contact_person ?: null;
+        $toContactDesig      = $client?->contact_designation ?: null;
+        $toCompany           = $client?->company ?: $clientName;
+        $toAddress           = $client?->address ?: null;
+        $toCity              = $client?->city ?: $location;
     @endphp
 
     {{-- ═══════════════════ PAGE 1 ═══════════════════ --}}
@@ -83,27 +109,21 @@
             <tr>
                 <td class="logo-cell">
                     @if ($logoDataUri)
-                        <img src="{{ $logoDataUri }}" alt="Overseas Marine Services">
+                        <img src="{{ $logoDataUri }}" alt="{{ $companyName }}">
                     @else
-                        <strong style="font-size:13px;color:#1e40af;">Overseas</strong>
+                        <strong style="font-size:13px;color:#1e40af;">{{ $companyName }}</strong>
                     @endif
                 </td>
                 <td class="title-cell">Commercial Proposal for<br>Provision of Crew Consultancy Services</td>
                 <td class="meta-cell">
                     <strong>Quotation No.:</strong> {{ $docNo }}<br>
-                    <strong>Date:</strong> {!! $dateStr !!}
+                    <strong>Date:</strong> {!! $issueDate !!}
+                    @if ($clientPo)<br><strong>Client PO:</strong> {{ $clientPo }}@endif
+                    @if ($vessel)<br><strong>Vessel/Project:</strong> {{ $vessel }}@endif
                 </td>
             </tr>
         </table>
 
-        @php
-            $client = $quote->client;
-            $toContactPerson     = $client?->contact_person ?: null;
-            $toContactDesig      = $client?->contact_designation ?: null;
-            $toCompany           = $client?->company ?: $clientName;
-            $toAddress           = $client?->address ?: null;
-            $toCity              = $client?->city ?: $location;
-        @endphp
         <div class="to-block">
             <strong>To:</strong><br>
             @if ($toContactPerson){{ $toContactPerson }},<br>@endif
@@ -117,7 +137,7 @@
 
         <div class="section">
             <div class="section-title">1.&nbsp; Introduction:</div>
-            Overseas Marine Services-Sole Proprietorship LLC (hereinafter referred to as "Supplier") is pleased to
+            {{ $companyLegalName }} (hereinafter referred to as "Supplier") is pleased to
             submit this commercial proposal to {{ $clientName }} (hereinafter referred to as "Client")
             for the provision of crew supply services as outlined below.
         </div>
@@ -138,7 +158,7 @@
 
         <div class="section">
             <div class="section-title">4.&nbsp; Duration &amp; Termination:</div>
-            This proposal is effective upon acceptance by the Client and will continue for firm <strong>One (1) year</strong>
+            This proposal is effective upon acceptance by the Client and will continue for firm <strong>{{ $duration }}</strong>
             from the mobilisation date, with the option to extend for additional 30 days. If Client terminates
             the agreement before completing the firm period, the Supplier must be reimbursed for the balance period
             at daily rates as per Annex I. Supplier can terminate the agreement with 2 days' notice period if the
@@ -162,13 +182,13 @@
         </div>
 
         <div class="footer-bar">
-            <div class="footer-company">Overseas Marine Services.</div>
+            <div class="footer-company">{{ $companyName }}.</div>
             <table class="footer-grid">
                 <tr>
-                    <td><span class="footer-icon">A</span> Office 402, Centro Capital Centre Offices Building, Al Zumurrud St, ADNEC Area, Abu Dhabi</td>
-                    <td><span class="footer-icon">P</span> +971 2 6714722</td>
-                    <td><span class="footer-icon">@</span> info@overseas-ms.com</td>
-                    <td><span class="footer-icon">W</span> www.overseas-ms.com</td>
+                    <td><span class="footer-icon">A</span> {{ $companyAddress }}</td>
+                    <td><span class="footer-icon">P</span> {{ $companyPhone }}</td>
+                    <td><span class="footer-icon">@</span> {{ $companyEmail }}</td>
+                    <td><span class="footer-icon">W</span> {{ $companyWebsite }}</td>
                     <td class="footer-page">Page 1 of 4</td>
                 </tr>
             </table>
@@ -181,15 +201,15 @@
             <tr>
                 <td class="logo-cell">
                     @if ($logoDataUri)
-                        <img src="{{ $logoDataUri }}" alt="Overseas Marine Services">
+                        <img src="{{ $logoDataUri }}" alt="{{ $companyName }}">
                     @else
-                        <strong style="font-size:13px;color:#1e40af;">Overseas</strong>
+                        <strong style="font-size:13px;color:#1e40af;">{{ $companyName }}</strong>
                     @endif
                 </td>
                 <td class="title-cell">Commercial Proposal for<br>Provision of Crew Consultancy Services</td>
                 <td class="meta-cell">
                     <strong>Quotation No.:</strong> {{ $docNo }}<br>
-                    <strong>Date:</strong> {!! $dateStr !!}
+                    <strong>Date:</strong> {!! $issueDate !!}
                 </td>
             </tr>
         </table>
@@ -230,20 +250,20 @@
         </div>
 
         <div class="sign-off">
-            <strong>For Overseas Marine Services</strong><br>
+            <strong>For {{ $companyName }}</strong><br>
             <br><br>
-            Kiron V.<br>
-            Commercial Manager
+            {{ $signatoryName }}<br>
+            {{ $signatoryRole }}
         </div>
 
         <div class="footer-bar">
-            <div class="footer-company">Overseas Marine Services.</div>
+            <div class="footer-company">{{ $companyName }}.</div>
             <table class="footer-grid">
                 <tr>
-                    <td><span class="footer-icon">A</span> Office 402, Centro Capital Centre Offices Building, Al Zumurrud St, ADNEC Area, Abu Dhabi</td>
-                    <td><span class="footer-icon">P</span> +971 2 6714722</td>
-                    <td><span class="footer-icon">@</span> info@overseas-ms.com</td>
-                    <td><span class="footer-icon">W</span> www.overseas-ms.com</td>
+                    <td><span class="footer-icon">A</span> {{ $companyAddress }}</td>
+                    <td><span class="footer-icon">P</span> {{ $companyPhone }}</td>
+                    <td><span class="footer-icon">@</span> {{ $companyEmail }}</td>
+                    <td><span class="footer-icon">W</span> {{ $companyWebsite }}</td>
                     <td class="footer-page">Page 2 of 4</td>
                 </tr>
             </table>
@@ -256,15 +276,15 @@
             <tr>
                 <td class="logo-cell">
                     @if ($logoDataUri)
-                        <img src="{{ $logoDataUri }}" alt="Overseas Marine Services">
+                        <img src="{{ $logoDataUri }}" alt="{{ $companyName }}">
                     @else
-                        <strong style="font-size:13px;color:#1e40af;">Overseas</strong>
+                        <strong style="font-size:13px;color:#1e40af;">{{ $companyName }}</strong>
                     @endif
                 </td>
                 <td class="title-cell">Commercial Proposal for<br>Provision of Crew Consultancy Services</td>
                 <td class="meta-cell">
                     <strong>Quotation No.:</strong> {{ $docNo }}<br>
-                    <strong>Date:</strong> {!! $dateStr !!}
+                    <strong>Date:</strong> {!! $issueDate !!}
                 </td>
             </tr>
         </table>
@@ -313,7 +333,7 @@
             </ul>
             <strong>Notes:</strong>
             <ol>
-                <li>The rates quoted are for firm 365 days.</li>
+                <li>The rates quoted are for firm {{ $duration }}.</li>
                 <li>The crew must be included in the P&amp;I of the vessel/barge.</li>
                 <li>The rates are applicable once the crew is mobilised to Abu Dhabi with all necessary passes to work in the field and charged till demobilised from Abu Dhabi.</li>
                 <li>Any applicable Overtime beyond standard work hours will be back charged pro rata.</li>
@@ -323,13 +343,13 @@
         </div>
 
         <div class="footer-bar">
-            <div class="footer-company">Overseas Marine Services.</div>
+            <div class="footer-company">{{ $companyName }}.</div>
             <table class="footer-grid">
                 <tr>
-                    <td><span class="footer-icon">A</span> Office 402, Centro Capital Centre Offices Building, Al Zumurrud St, ADNEC Area, Abu Dhabi</td>
-                    <td><span class="footer-icon">P</span> +971 2 6714722</td>
-                    <td><span class="footer-icon">@</span> info@overseas-ms.com</td>
-                    <td><span class="footer-icon">W</span> www.overseas-ms.com</td>
+                    <td><span class="footer-icon">A</span> {{ $companyAddress }}</td>
+                    <td><span class="footer-icon">P</span> {{ $companyPhone }}</td>
+                    <td><span class="footer-icon">@</span> {{ $companyEmail }}</td>
+                    <td><span class="footer-icon">W</span> {{ $companyWebsite }}</td>
                     <td class="footer-page">Page 3 of 4</td>
                 </tr>
             </table>
@@ -342,15 +362,15 @@
             <tr>
                 <td class="logo-cell">
                     @if ($logoDataUri)
-                        <img src="{{ $logoDataUri }}" alt="Overseas Marine Services">
+                        <img src="{{ $logoDataUri }}" alt="{{ $companyName }}">
                     @else
-                        <strong style="font-size:13px;color:#1e40af;">Overseas</strong>
+                        <strong style="font-size:13px;color:#1e40af;">{{ $companyName }}</strong>
                     @endif
                 </td>
                 <td class="title-cell">Commercial Proposal for<br>Provision of Crew Consultancy Services</td>
                 <td class="meta-cell">
                     <strong>Quotation No.:</strong> {{ $docNo }}<br>
-                    <strong>Date:</strong> {!! $dateStr !!}
+                    <strong>Date:</strong> {!! $issueDate !!}
                 </td>
             </tr>
         </table>
@@ -407,19 +427,19 @@
             <li>Sedan car with maximum 2 crew &amp; luggage and quoted one way trip. Seven or more seaters can be provided upon request at additional cost.</li>
         </ul>
 
-        <div class="section-ul-title">1.&nbsp; FLIGHT CHARGES</div>
+        <div class="section-ul-title">3.&nbsp; FLIGHT CHARGES</div>
         <ul class="bullet-list" style="font-size:9.5px; margin-top:4px;">
             <li>We have exclusive marine and non-marine rates with various airlines and can be provided with actual + 5% service charges.</li>
         </ul>
 
         <div class="footer-bar">
-            <div class="footer-company">Overseas Marine Services.</div>
+            <div class="footer-company">{{ $companyName }}.</div>
             <table class="footer-grid">
                 <tr>
-                    <td><span class="footer-icon">A</span> Office 402, Centro Capital Centre Offices Building, Al Zumurrud St, ADNEC Area, Abu Dhabi</td>
-                    <td><span class="footer-icon">P</span> +971 2 6714722</td>
-                    <td><span class="footer-icon">@</span> info@overseas-ms.com</td>
-                    <td><span class="footer-icon">W</span> www.overseas-ms.com</td>
+                    <td><span class="footer-icon">A</span> {{ $companyAddress }}</td>
+                    <td><span class="footer-icon">P</span> {{ $companyPhone }}</td>
+                    <td><span class="footer-icon">@</span> {{ $companyEmail }}</td>
+                    <td><span class="footer-icon">W</span> {{ $companyWebsite }}</td>
                     <td class="footer-page">Page 4 of 4</td>
                 </tr>
             </table>
