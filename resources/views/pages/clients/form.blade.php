@@ -33,6 +33,14 @@
 
             <flux:separator />
 
+            <h3 class="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">Contact &amp; Address</h3>
+            <div class="grid gap-4 md:grid-cols-2">
+                <flux:input name="contact_person" label="Contact Person" placeholder="e.g. Mr. Vimal Kumar" :value="old('contact_person', $client->contact_person)" />
+                <flux:input name="contact_designation" label="Designation / Role" placeholder="e.g. Crewing Supervisor" :value="old('contact_designation', $client->contact_designation)" />
+                <flux:input name="address" label="Address" placeholder="e.g. Office # 304, 3rd Floor, Al Salmeen Golden Tower" :value="old('address', $client->address)" class="md:col-span-2" />
+                <flux:input name="city" label="City / Country" placeholder="e.g. Abu Dhabi, UAE" :value="old('city', $client->city)" class="md:col-span-2" />
+            </div>
+
             <div class="flex justify-end">
                 <flux:button variant="primary" type="submit" icon="check">{{ $isEdit ? 'Update Client' : 'Save Client' }}</flux:button>
             </div>

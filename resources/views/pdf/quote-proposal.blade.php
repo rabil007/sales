@@ -96,12 +96,21 @@
             </tr>
         </table>
 
+        @php
+            $client = $quote->client;
+            $toContactPerson     = $client?->contact_person ?: null;
+            $toContactDesig      = $client?->contact_designation ?: null;
+            $toCompany           = $client?->company ?: $clientName;
+            $toAddress           = $client?->address ?: null;
+            $toCity              = $client?->city ?: $location;
+        @endphp
         <div class="to-block">
             <strong>To:</strong><br>
-            {{ $clientName }},<br>
-            Crewing Supervisor,<br>
-            {{ $clientName }},<br>
-            {{ $location }}
+            @if ($toContactPerson){{ $toContactPerson }},<br>@endif
+            @if ($toContactDesig){{ $toContactDesig }},<br>@endif
+            {{ $toCompany }},<br>
+            @if ($toAddress){{ $toAddress }},<br>@endif
+            {{ $toCity }}
         </div>
 
         <div class="subject">Subject: {{ $subject }}</div>
