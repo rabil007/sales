@@ -119,6 +119,38 @@ test('user can export quote as pdf', function () {
     expect($response->headers->get('content-type'))->toContain('application/pdf');
 });
 
+test('user can preview quote using the same proposal template', function () {
+    $this->actingAs(User::factory()->create());
+
+    $quote = Quote::factory()->create([
+        'doc_no' => 'OMS-Q-2026-778',
+        'issue_date' => now()->toDateString(),
+        'client_name' => 'ADNOC Offshore',
+    ]);
+
+    $response = $this->get(route('quotes.preview', $quote));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('text/html');
+    $response->assertSee('Commercial Proposal for');
+});
+
+test('user can preview quote as inline pdf viewer', function () {
+    $this->actingAs(User::factory()->create());
+
+    $quote = Quote::factory()->create([
+        'doc_no' => 'OMS-Q-2026-779',
+        'issue_date' => now()->toDateString(),
+        'client_name' => 'ADNOC Offshore',
+    ]);
+
+    $response = $this->get(route('quotes.preview-pdf', $quote));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('application/pdf')
+        ->and($response->headers->get('content-disposition'))->toContain('inline');
+});
+
 test('user can use workflow transitions and renew agreement', function () {
     $this->actingAs(User::factory()->create());
 

@@ -11,6 +11,8 @@ Route::redirect('/', '/login')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [QuoteController::class, 'dashboard'])->name('dashboard');
     Route::resource('quotes', QuoteController::class);
+    Route::get('quotes/{quote}/preview', [QuoteController::class, 'preview'])->name('quotes.preview');
+    Route::get('quotes/{quote}/preview-pdf', [QuoteController::class, 'previewPdf'])->name('quotes.preview-pdf');
     Route::get('quotes/{quote}/export-pdf', [QuoteController::class, 'exportPdf'])->name('quotes.export');
     Route::post('quotes/{quote}/send', [QuoteController::class, 'send'])->name('quotes.send');
     Route::post('quotes/{quote}/approve', [QuoteController::class, 'approve'])->name('quotes.approve');

@@ -165,6 +165,30 @@ class QuoteController extends Controller
         return view('pages.quotes.show', ['quote' => $quote]);
     }
 
+    public function preview(Quote $quote): View
+    {
+        $quote->load(['crewLines', 'client']);
+
+        return view('pdf.quote-proposal', [
+            'quote' => $quote,
+            'today' => now(),
+            'terms' => is_array($quote->terms) ? $quote->terms : [],
+        ]);
+    }
+
+    public function previewPdf(Quote $quote): Response
+    {
+        $quote->load(['crewLines', 'client']);
+
+        $pdf = Pdf::loadView('pdf.quote-proposal', [
+            'quote' => $quote,
+            'today' => now(),
+            'terms' => is_array($quote->terms) ? $quote->terms : [],
+        ])->setPaper('a4');
+
+        return $pdf->stream($quote->doc_no.'-proposal.pdf');
+    }
+
     public function exportPdf(Quote $quote): Response
     {
         $quote->load(['crewLines', 'client']);

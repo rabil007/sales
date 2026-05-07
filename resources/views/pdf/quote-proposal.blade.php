@@ -63,8 +63,6 @@
 </head>
 <body>
     @php
-        use App\Models\CompanySetting;
-
         // ── Logo ────────────────────────────────────────────────────
         $logoAbsolutePath = storage_path('app/public/overseas-marine logo.png');
         $logoDataUri = null;
@@ -73,7 +71,7 @@
         }
 
         // ── Company settings ────────────────────────────────────────
-        $cs = CompanySetting::allKeyed();
+        $cs = \App\Models\CompanySetting::allKeyed();
         $companyName      = $cs['company_name']       ?? 'Overseas Marine Services';
         $companyLegalName = $cs['company_legal_name'] ?? $companyName;
         $companyAddress   = $cs['company_address']    ?? '';
@@ -149,20 +147,34 @@
                 <td class="meta-cell">
                     <strong>Quotation No.:</strong> {{ $docNo }}<br>
                     <strong>Date:</strong> {!! $issueDate !!}
-                    @if ($expiryDate)<br><strong>Valid Until:</strong> {!! $expiryDate !!}@endif
-                    @if ($clientPo)<br><strong>Client PO:</strong> {{ $clientPo }}@endif
-                    @if ($vessel)<br><strong>Vessel/Project:</strong> {{ $vessel }}@endif
-                    @if ($startDate && $endDate)<br><strong>Contract Period:</strong> {{ $startDate }} – {{ $endDate }}@endif
+                    @if ($expiryDate)
+                        <br><strong>Valid Until:</strong> {!! $expiryDate !!}
+                    @endif
+                    @if ($clientPo)
+                        <br><strong>Client PO:</strong> {{ $clientPo }}
+                    @endif
+                    @if ($vessel)
+                        <br><strong>Vessel/Project:</strong> {{ $vessel }}
+                    @endif
+                    @if ($startDate && $endDate)
+                        <br><strong>Contract Period:</strong> {{ $startDate }} – {{ $endDate }}
+                    @endif
                 </td>
             </tr>
         </table>
 
         <div class="to-block">
             <strong>To:</strong><br>
-            @if ($toContactPerson){{ $toContactPerson }},<br>@endif
-            @if ($toContactDesig){{ $toContactDesig }},<br>@endif
+            @if ($toContactPerson)
+                {{ $toContactPerson }},<br>
+            @endif
+            @if ($toContactDesig)
+                {{ $toContactDesig }},<br>
+            @endif
             {{ $toCompany }},<br>
-            @if ($toAddress){{ $toAddress }},<br>@endif
+            @if ($toAddress)
+                {{ $toAddress }},<br>
+            @endif
             {{ $toCity }}
         </div>
 
@@ -192,7 +204,11 @@
         <div class="section">
             <div class="section-title">4.&nbsp; Duration &amp; Termination:</div>
             This proposal is effective upon acceptance by the Client and will continue for firm <strong>{{ $duration }}</strong>
-            from the mobilisation date@if ($startDate && $endDate) ({{ $startDate }} to {{ $endDate }})@endif,
+            from the mobilisation date
+            @if ($startDate && $endDate)
+                ({{ $startDate }} to {{ $endDate }})
+            @endif
+            ,
             with the option to extend for additional 30 days. If Client terminates
             the agreement before completing the firm period, the Supplier must be reimbursed for the balance period
             at daily rates as per Annex I. Supplier can terminate the agreement with 2 days' notice period if the
