@@ -31,6 +31,20 @@ class Quote extends Model
     use HasFactory;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'issue_date' => 'date',
+            'expiry_date' => 'date',
+            'start_date' => 'date',
+            'end_date' => 'date',
+            'total_amount' => 'decimal:2',
+        ];
+    }
+
+    /**
      * @return HasMany<QuoteCrewLine, $this>
      */
     public function crewLines(): HasMany

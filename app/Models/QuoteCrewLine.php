@@ -26,6 +26,20 @@ class QuoteCrewLine extends Model
     use HasFactory;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'qty' => 'integer',
+            'duration' => 'integer',
+            'rate' => 'decimal:2',
+            'ot_rate' => 'decimal:2',
+            'mob_date' => 'date',
+        ];
+    }
+
+    /**
      * @return BelongsTo<Quote, $this>
      */
     public function quote(): BelongsTo
