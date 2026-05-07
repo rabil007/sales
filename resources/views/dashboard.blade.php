@@ -40,6 +40,85 @@
             </div>
         </div>
 
+        <div class="grid gap-4 xl:grid-cols-3">
+            <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Average Quote Value</p>
+                <p class="mt-2 text-2xl font-bold tabular-nums">AED {{ number_format((float) $averageQuoteValue, 2) }}</p>
+                <p class="mt-1 text-xs text-zinc-500">Based on all quotes</p>
+            </div>
+            <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Expiring in 30 Days</p>
+                <p class="mt-2 text-2xl font-bold tabular-nums">{{ number_format($expiringSoon) }}</p>
+                <p class="mt-1 text-xs text-zinc-500">Requires commercial follow-up</p>
+            </div>
+            <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Status Mix</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <flux:badge color="zinc">Draft: {{ $draftCount }}</flux:badge>
+                    <flux:badge color="blue">Sent: {{ $sentCount }}</flux:badge>
+                    <flux:badge color="lime">Approved: {{ $approvedCount }}</flux:badge>
+                    <flux:badge color="red">Expired: {{ $expiredCount }}</flux:badge>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-4 xl:grid-cols-2">
+            <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                    <flux:heading size="sm">Top Clients by Quote Value</flux:heading>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm">
+                        <thead class="bg-zinc-50 dark:bg-zinc-800">
+                            <tr class="text-left text-xs uppercase tracking-wide text-zinc-500">
+                                <th class="px-4 py-3">Client</th>
+                                <th class="px-4 py-3">Quotes</th>
+                                <th class="px-4 py-3">Total Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($topClients as $client)
+                                <tr class="border-t border-zinc-200 dark:border-zinc-700">
+                                    <td class="px-4 py-3 font-medium">{{ $client->client_name }}</td>
+                                    <td class="px-4 py-3">{{ $client->quotes_count }}</td>
+                                    <td class="px-4 py-3">AED {{ number_format((float) $client->total_value, 2) }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td class="px-4 py-6 text-center text-zinc-500" colspan="3">No client analytics available yet.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+                <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                    <flux:heading size="sm">Monthly Quote Value (Last 6 Months)</flux:heading>
+                </div>
+                <div class="p-4">
+                    <div class="space-y-3">
+                        @foreach ($monthlyChart as $monthLabel => $monthTotal)
+                            @php
+                                $maxMonthlyValue = max((float) $monthlyChart->max(), 1);
+                                $barWidth = max((int) round(($monthTotal / $maxMonthlyValue) * 100), 2);
+                            @endphp
+                            <div>
+                                <div class="mb-1 flex items-center justify-between text-xs">
+                                    <span class="text-zinc-500">{{ $monthLabel }}</span>
+                                    <span class="font-medium text-zinc-700 dark:text-zinc-300">AED {{ number_format((float) $monthTotal, 2) }}</span>
+                                </div>
+                                <div class="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                    <div class="h-2 rounded-full bg-blue-500" style="width: {{ $barWidth }}%"></div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Recent Quotes Table --}}
         <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
             <div class="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">

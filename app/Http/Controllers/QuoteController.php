@@ -23,11 +23,51 @@ class QuoteController extends Controller
     {
         $this->syncExpiredQuotes();
 
+        $statusCounts = Quote::query()
+            ->select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status');
+
+        $topClients = Quote::query()
+            ->select('client_name', DB::raw('COUNT(*) as quotes_count'), DB::raw('SUM(total_amount) as total_value'))
+            ->whereNotNull('client_name')
+            ->groupBy('client_name')
+            ->orderByDesc('total_value')
+            ->limit(5)
+            ->get();
+
+        $monthlyValue = Quote::query()
+            ->whereNotNull('issue_date')
+            ->where('issue_date', '>=', now()->subMonths(5)->startOfMonth())
+            ->get(['issue_date', 'total_amount'])
+            ->groupBy(fn (Quote $quote) => optional($quote->issue_date)->format('Y-m'))
+            ->map(fn ($quotes) => (float) $quotes->sum('total_amount'));
+
+        $monthlyChart = collect(range(0, 5))
+            ->mapWithKeys(function (int $offset) use ($monthlyValue): array {
+                $date = now()->subMonths(5 - $offset)->startOfMonth();
+                $key = $date->format('Y-m');
+
+                return [$date->format('M Y') => (float) ($monthlyValue[$key] ?? 0)];
+            });
+
         return view('dashboard', [
             'totalQuotes' => Quote::query()->count(),
             'activeAgreements' => Quote::query()->where('status', 'Active')->count(),
             'pendingApproval' => Quote::query()->where('status', 'Sent')->count(),
             'totalValue' => Quote::query()->sum('total_amount'),
+            'averageQuoteValue' => Quote::query()->avg('total_amount') ?? 0,
+            'expiringSoon' => Quote::query()
+                ->whereNotNull('expiry_date')
+                ->whereDate('expiry_date', '>=', now()->toDateString())
+                ->whereDate('expiry_date', '<=', now()->addDays(30)->toDateString())
+                ->count(),
+            'draftCount' => (int) ($statusCounts['Draft'] ?? 0),
+            'sentCount' => (int) ($statusCounts['Sent'] ?? 0),
+            'approvedCount' => (int) ($statusCounts['Approved'] ?? 0),
+            'expiredCount' => (int) ($statusCounts['Expired'] ?? 0),
+            'topClients' => $topClients,
+            'monthlyChart' => $monthlyChart,
             'recentQuotes' => Quote::query()->latest('id')->limit(5)->get(),
         ]);
     }
