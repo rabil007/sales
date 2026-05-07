@@ -31,11 +31,17 @@ class QuoteController extends Controller
     public function index(Request $request): View
     {
         $status = $request->string('status')->toString();
+        $q = $request->string('q')->trim()->toString();
 
         return view('pages.quotes.index', [
             'status' => $status,
+            'q' => $q,
             'quotes' => Quote::query()
                 ->when($status !== '', fn ($query) => $query->where('status', $status))
+                ->when($q !== '', fn ($query) => $query->where(function ($query) use ($q): void {
+                    $query->where('client_name', 'like', "%{$q}%")
+                        ->orWhere('doc_no', 'like', "%{$q}%");
+                }))
                 ->latest('id')
                 ->paginate(15)
                 ->withQueryString(),

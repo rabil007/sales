@@ -16,9 +16,7 @@
                 <flux:navbar.item icon="document-text" :href="route('quotes.index')" :current="request()->routeIs('quotes.*')" wire:navigate>
                     {{ __('Quotes & Agreements') }}
                 </flux:navbar.item>
-                <flux:navbar.item icon="plus-circle" :href="route('quotes.create')" :current="request()->routeIs('quotes.create')" wire:navigate>
-                    {{ __('New Quote') }}
-                </flux:navbar.item>
+
             </flux:navbar>
 
             <flux:spacer />
@@ -41,9 +39,7 @@
                     <flux:sidebar.item icon="document-text" :href="route('quotes.index')" :current="request()->routeIs('quotes.*')" wire:navigate>
                         {{ __('Quotes & Agreements')  }}
                     </flux:sidebar.item>
-                    <flux:sidebar.item icon="plus-circle" :href="route('quotes.create')" :current="request()->routeIs('quotes.create')" wire:navigate>
-                        {{ __('New Quote')  }}
-                    </flux:sidebar.item>
+
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
