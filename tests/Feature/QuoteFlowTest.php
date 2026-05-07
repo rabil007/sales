@@ -26,6 +26,7 @@ test('user can create a quote with crew lines', function () {
         'issue_date' => now()->toDateString(),
         'status' => 'Draft',
         'currency' => 'AED',
+        'client_id' => $client->id,
         'client_name' => $client->name,
         'crew_lines' => [
             [
@@ -34,9 +35,13 @@ test('user can create a quote with crew lines', function () {
                 'qty' => 2,
                 'basis' => 'Day',
                 'rate' => 100.00,
-                'duration' => 10,
+                'duration_days' => 10,
+                'monthly_rate' => 0,
+                'duration_months' => 0,
+                'manual_total' => 0,
                 'ot_rate' => 0,
                 'mob_date' => now()->toDateString(),
+                'demob_date' => null,
                 'remarks' => null,
             ],
         ],
@@ -52,12 +57,14 @@ test('user can create a quote with crew lines', function () {
 
 test('user can update quote and filter list', function () {
     $this->actingAs(User::factory()->create());
+    $client = Client::factory()->create(['name' => 'Client A']);
 
     $quote = Quote::factory()->create([
         'doc_no' => 'OMS-Q-2026-201',
         'status' => 'Draft',
         'type' => 'Proposal',
         'issue_date' => now()->toDateString(),
+        'client_id' => $client->id,
         'client_name' => 'Client A',
     ]);
 
@@ -67,6 +74,7 @@ test('user can update quote and filter list', function () {
         'issue_date' => now()->toDateString(),
         'status' => 'Sent',
         'currency' => 'AED',
+        'client_id' => $client->id,
         'client_name' => 'Client A',
         'crew_lines' => [
             [
@@ -75,9 +83,13 @@ test('user can update quote and filter list', function () {
                 'qty' => 1,
                 'basis' => 'Day',
                 'rate' => 300,
-                'duration' => 5,
+                'duration_days' => 5,
+                'duration_months' => 0,
+                'monthly_rate' => 0,
+                'manual_total' => 0,
                 'ot_rate' => 0,
                 'mob_date' => null,
+                'demob_date' => null,
                 'remarks' => null,
             ],
         ],
@@ -90,4 +102,49 @@ test('user can update quote and filter list', function () {
         ->and((float) $quote->total_amount)->toBe(1500.0);
 
     $this->get(route('quotes.index', ['status' => 'Sent']))->assertSee('OMS-Q-2026-201');
+});
+
+test('user can use workflow transitions and renew agreement', function () {
+    $this->actingAs(User::factory()->create());
+
+    $quote = Quote::factory()->hasCrewLines(1)->create([
+        'status' => 'Draft',
+        'expiry_date' => now()->addMonth()->toDateString(),
+    ]);
+
+    $this->post(route('quotes.send', $quote))->assertRedirect();
+    $this->post(route('quotes.approve', $quote))->assertRedirect();
+    $this->post(route('quotes.activate', $quote))->assertRedirect();
+    $this->post(route('quotes.expire', $quote))->assertRedirect();
+
+    expect($quote->refresh()->status)->toBe('Expired');
+
+    $this->post(route('quotes.renew', $quote))->assertRedirect();
+
+    expect(Quote::query()->count())->toBe(2);
+    $renewedQuote = Quote::query()->whereKeyNot($quote->id)->firstOrFail();
+    expect($renewedQuote->status)->toBe('Draft')
+        ->and($renewedQuote->crewLines()->count())->toBe(1);
+});
+
+test('locked quote cannot be updated', function () {
+    $this->actingAs(User::factory()->create());
+    $client = Client::factory()->create();
+    $quote = Quote::factory()->create([
+        'status' => 'Approved',
+        'client_id' => $client->id,
+        'client_name' => $client->name,
+    ]);
+
+    $this->put(route('quotes.update', $quote), [
+        'doc_no' => $quote->doc_no,
+        'type' => 'Proposal',
+        'issue_date' => now()->toDateString(),
+        'status' => 'Approved',
+        'currency' => 'AED',
+        'client_id' => $client->id,
+        'client_name' => $client->name,
+    ])->assertRedirect(route('quotes.edit', $quote, absolute: false));
+
+    expect($quote->refresh()->status)->toBe('Approved');
 });

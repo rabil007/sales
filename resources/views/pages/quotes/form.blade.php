@@ -21,8 +21,16 @@
             @if ($isEdit)
                 @method('PUT')
             @endif
+            <input type="hidden" name="client_id" id="client-id-input" value="{{ old('client_id', $quote->client_id) }}">
 
             <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+                @if ($isLocked)
+                    <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                        <flux:callout color="amber" icon="lock-closed">
+                            This agreement is locked because its status is {{ $quote->status }}.
+                        </flux:callout>
+                    </div>
+                @endif
                 {{-- Tab Navigation --}}
                 <div class="flex gap-1 border-b border-zinc-200 px-4 pt-3 dark:border-zinc-700 text-sm">
                     <button type="button" data-tab-button="details" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Quote Details</button>
@@ -32,7 +40,7 @@
                 </div>
 
                 {{-- Tab: Quote Details --}}
-                <div data-tab-content="details" class="tab-content p-6 space-y-6">
+                <fieldset data-tab-content="details" class="tab-content p-6 space-y-6" @disabled($isLocked)>
                     {{-- Document Info --}}
                     <div>
                         <h3 class="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-4">Document Info</h3>
@@ -64,10 +72,10 @@
                     <div>
                         <h3 class="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-4">Client Info</h3>
                         <div class="grid gap-4 md:grid-cols-2">
-                            <flux:select name="client_name" label="Client Name" required>
+                            <flux:select name="client_name" label="Client Name" required id="client-name-select">
                                 <option value="">Select client</option>
                                 @foreach ($clients as $clientOption)
-                                    <option value="{{ $clientOption->name }}" @selected(old('client_name', $quote->client_name) === $clientOption->name)>
+                                    <option value="{{ $clientOption->name }}" data-client-id="{{ $clientOption->id }}" @selected(old('client_name', $quote->client_name) === $clientOption->name)>
                                         {{ $clientOption->name }}
                                     </option>
                                 @endforeach
@@ -77,12 +85,15 @@
                             <flux:input name="location" label="Location / Field" :value="old('location', $quote->location)" />
                             <flux:input name="start_date" type="date" label="Contract Start Date" :value="old('start_date', optional($quote->start_date)->toDateString())" />
                             <flux:input name="end_date" type="date" label="Contract End Date" :value="old('end_date', optional($quote->end_date)->toDateString())" />
+                            <flux:input name="duration_text" label="Contract Duration" :value="old('duration_text', $quote->duration_text)" />
+                            <flux:input name="project_name" label="Project Name" :value="old('project_name', $quote->project_name)" />
+                            <flux:input name="renewal_notice_days" type="number" min="1" label="Renewal Notice (Days)" :value="old('renewal_notice_days', $quote->renewal_notice_days)" />
                         </div>
                     </div>
-                </div>
+                </fieldset>
 
                 {{-- Tab: Crew Lines --}}
-                <div data-tab-content="crew" class="tab-content hidden p-6 space-y-3">
+                <fieldset data-tab-content="crew" class="tab-content hidden p-6 space-y-3" @disabled($isLocked)>
                     <div class="flex items-center justify-between">
                         <p class="text-sm text-zinc-500">Add all crew positions included in this quote.</p>
                         <flux:button type="button" variant="filled" icon="plus" size="sm" id="add-crew-line">Add Row</flux:button>
@@ -97,9 +108,13 @@
                                     <th class="px-3 py-2.5">Qty</th>
                                     <th class="px-3 py-2.5">Basis</th>
                                     <th class="px-3 py-2.5">Rate</th>
-                                    <th class="px-3 py-2.5">Duration</th>
+                                    <th class="px-3 py-2.5">Monthly Rate</th>
+                                    <th class="px-3 py-2.5">Duration (Days)</th>
+                                    <th class="px-3 py-2.5">Duration (Months)</th>
+                                    <th class="px-3 py-2.5">Manual Total</th>
                                     <th class="px-3 py-2.5">OT Rate</th>
                                     <th class="px-3 py-2.5">Mob Date</th>
+                                    <th class="px-3 py-2.5">Demob Date</th>
                                     <th class="px-3 py-2.5">Remarks</th>
                                     <th class="px-3 py-2.5"></th>
                                 </tr>
@@ -131,9 +146,13 @@
                                         <td class="p-2"><input class="h-9 w-16 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="1" name="crew_lines[{{ $index }}][qty]" value="{{ $line['qty'] ?? 1 }}" /></td>
                                         <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][basis]" value="{{ $line['basis'] ?? 'Day' }}" /></td>
                                         <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][rate]" value="{{ $line['rate'] ?? 0 }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="0" name="crew_lines[{{ $index }}][duration]" value="{{ $line['duration'] ?? 0 }}" /></td>
+                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][monthly_rate]" value="{{ $line['monthly_rate'] ?? 0 }}" /></td>
+                                        <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="0" name="crew_lines[{{ $index }}][duration_days]" value="{{ $line['duration_days'] ?? $line['duration'] ?? 0 }}" /></td>
+                                        <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="0" name="crew_lines[{{ $index }}][duration_months]" value="{{ $line['duration_months'] ?? 0 }}" /></td>
+                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][manual_total]" value="{{ $line['manual_total'] ?? 0 }}" /></td>
                                         <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][ot_rate]" value="{{ $line['ot_rate'] ?? 0 }}" /></td>
                                         <td class="p-2"><input class="h-9 w-32 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="date" name="crew_lines[{{ $index }}][mob_date]" value="{{ $line['mob_date'] ?? '' }}" /></td>
+                                        <td class="p-2"><input class="h-9 w-32 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="date" name="crew_lines[{{ $index }}][demob_date]" value="{{ $line['demob_date'] ?? '' }}" /></td>
                                         <td class="p-2"><input class="h-9 w-full min-w-[100px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][remarks]" value="{{ $line['remarks'] ?? '' }}" /></td>
                                         <td class="p-2 text-right">
                                             <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950" data-remove-line title="Remove row">
@@ -145,10 +164,10 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </fieldset>
 
                 {{-- Tab: Terms --}}
-                <div data-tab-content="terms" class="tab-content hidden p-6 space-y-4">
+                <fieldset data-tab-content="terms" class="tab-content hidden p-6 space-y-4" @disabled($isLocked)>
                     <flux:select name="payment_terms" label="Payment Terms">
                         @foreach (['30 days from invoice', '45 days from invoice', '60 days from invoice', 'Advance payment', '50% advance, 50% on completion'] as $termsOption)
                             <option value="{{ $termsOption }}" @selected(old('payment_terms', $quote->payment_terms) === $termsOption)>{{ $termsOption }}</option>
@@ -159,6 +178,8 @@
                     <flux:separator />
 
                     <h3 class="text-sm font-semibold">Terms & Conditions</h3>
+                    <flux:textarea name="terms_conditions" label="General Terms & Conditions" rows="4">{{ old('terms_conditions', $quote->terms_conditions) }}</flux:textarea>
+                    <flux:textarea name="special_conditions" label="Special Conditions" rows="3">{{ old('special_conditions', $quote->special_conditions) }}</flux:textarea>
                     <div class="grid gap-4 md:grid-cols-2">
                         <flux:textarea name="terms[mobilization_replacement]" label="Mobilization / Replacement" rows="4">{{ old('terms.mobilization_replacement', 'OMS will provide qualified replacements within 48 hours of notification. Mobilization costs are for the client account unless otherwise agreed.') }}</flux:textarea>
                         <flux:textarea name="terms[invoicing_payment]" label="Invoicing & Payment" rows="4">{{ old('terms.invoicing_payment', 'Invoices will be raised monthly based on approved timesheets. Payment is due within the agreed payment terms from invoice date.') }}</flux:textarea>
@@ -167,7 +188,7 @@
                         <flux:textarea name="terms[termination]" label="Termination" rows="4">{{ old('terms.termination', 'Either party may terminate this agreement with 30 days written notice. Immediate termination applies in cases of gross misconduct or safety breach.') }}</flux:textarea>
                         <flux:textarea name="terms[governing_law]" label="Governing Law" rows="4">{{ old('terms.governing_law', 'This agreement shall be governed by the laws of the United Arab Emirates. Disputes shall be resolved through arbitration in Abu Dhabi, UAE.') }}</flux:textarea>
                     </div>
-                </div>
+                </fieldset>
 
                 {{-- Tab: Preview --}}
                 <div data-tab-content="preview" class="tab-content hidden p-6 space-y-4">
@@ -195,13 +216,14 @@
                             variant="danger"
                             icon="trash"
                             type="button"
+                            :disabled="$isLocked"
                             x-data
                             x-on:click="if (confirm('Delete this quote? This action cannot be undone.')) document.getElementById('delete-quote-form').submit()"
                         >
                             Delete
                         </flux:button>
                     @endif
-                    <flux:button variant="primary" type="submit" icon="check">
+                    <flux:button variant="primary" type="submit" icon="check" :disabled="$isLocked">
                         {{ $isEdit ? 'Update Quote' : 'Save Quote' }}
                     </flux:button>
                 </div>
@@ -225,6 +247,8 @@
             const tabPrevButton = document.getElementById('tab-prev-button');
             const tabNextButton = document.getElementById('tab-next-button');
             const tabStepIndicator = document.getElementById('tab-step-indicator');
+            const clientNameSelect = document.getElementById('client-name-select');
+            const clientIdInput = document.getElementById('client-id-input');
             let activeTab = tabs[0];
 
             function setActiveTab(tab) {
@@ -283,6 +307,16 @@
             const trashIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="size-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>`;
             const rankOptions = @json($ranks->values()->all());
 
+            if (clientNameSelect instanceof HTMLSelectElement && clientIdInput instanceof HTMLInputElement) {
+                const syncClientId = () => {
+                    const selectedOption = clientNameSelect.selectedOptions[0];
+                    clientIdInput.value = selectedOption?.dataset.clientId ?? '';
+                };
+
+                clientNameSelect.addEventListener('change', syncClientId);
+                syncClientId();
+            }
+
             function buildRankSelect(index, selected = '') {
                 const options = rankOptions.map((rank) => {
                     const isSelected = rank.name === selected ? 'selected' : '';
@@ -302,9 +336,13 @@
                     <td class="p-2"><input class="${inputClass} w-16" type="number" min="1" name="crew_lines[${index}][qty]" value="1" /></td>
                     <td class="p-2"><input class="${inputClass} w-20" name="crew_lines[${index}][basis]" value="Day" /></td>
                     <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][rate]" value="0" /></td>
-                    <td class="p-2"><input class="${inputClass} w-20" type="number" min="0" name="crew_lines[${index}][duration]" value="0" /></td>
+                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][monthly_rate]" value="0" /></td>
+                    <td class="p-2"><input class="${inputClass} w-20" type="number" min="0" name="crew_lines[${index}][duration_days]" value="0" /></td>
+                    <td class="p-2"><input class="${inputClass} w-20" type="number" min="0" name="crew_lines[${index}][duration_months]" value="0" /></td>
+                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][manual_total]" value="0" /></td>
                     <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][ot_rate]" value="0" /></td>
                     <td class="p-2"><input class="${inputClass} w-32" type="date" name="crew_lines[${index}][mob_date]" /></td>
+                    <td class="p-2"><input class="${inputClass} w-32" type="date" name="crew_lines[${index}][demob_date]" /></td>
                     <td class="p-2"><input class="${inputClass} min-w-[100px]" name="crew_lines[${index}][remarks]" /></td>
                     <td class="p-2 text-right">
                         <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950" data-remove-line title="Remove row">
@@ -383,17 +421,23 @@
                     const get = (name) => row.querySelector(`[name*="[${name}]"]`)?.value ?? '';
                     const qty = Number(get('qty') || 0);
                     const rate = Number(get('rate') || 0);
-                    const duration = Number(get('duration') || 0);
-                    const amount = qty * rate * duration;
+                    const durationDays = Number(get('duration_days') || get('duration') || 0);
+                    const durationMonths = Number(get('duration_months') || 0);
+                    const monthlyRate = Number(get('monthly_rate') || 0);
+                    const manualTotal = Number(get('manual_total') || 0);
+                    const basis = get('basis');
+                    const amount = basis === 'Month'
+                        ? qty * durationMonths * monthlyRate
+                        : (basis === 'Fixed' ? manualTotal : qty * rate * durationDays);
 
                     return {
                         index: index + 1,
                         rank: get('rank'),
                         category: get('category'),
                         qty,
-                        basis: get('basis'),
+                        basis,
                         rate,
-                        duration,
+                        duration: basis === 'Month' ? durationMonths : durationDays,
                         amount,
                     };
                 });

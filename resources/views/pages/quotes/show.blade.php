@@ -7,12 +7,19 @@
                 <flux:button variant="primary" onclick="window.print()" type="button">Print / Export PDF</flux:button>
             </div>
         </div>
+        <div class="flex flex-wrap gap-2 no-print">
+            <form method="POST" action="{{ route('quotes.send', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="ghost">Mark Sent</flux:button></form>
+            <form method="POST" action="{{ route('quotes.approve', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="ghost">Approve</flux:button></form>
+            <form method="POST" action="{{ route('quotes.activate', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="ghost">Activate</flux:button></form>
+            <form method="POST" action="{{ route('quotes.expire', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="ghost">Expire</flux:button></form>
+            <form method="POST" action="{{ route('quotes.renew', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="filled">Renew</flux:button></form>
+        </div>
 
         <div class="mx-auto max-w-4xl rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
             <div class="mb-6 flex items-start justify-between">
                 <div>
                     <h1 class="text-xl font-semibold">Overseas Marine Services</h1>
-                    <p class="text-sm text-zinc-500">{{ $quote->type }}</p>
+                    <p class="text-sm text-zinc-500">{{ in_array($quote->status, ['Draft', 'Sent'], true) ? 'Proposal / Quotation' : 'Crew Supply Agreement / Purchase Order' }}</p>
                 </div>
                 <div class="text-right">
                     <p class="font-medium">{{ $quote->doc_no }}</p>
@@ -24,6 +31,8 @@
                 <p><span class="text-zinc-500">Client:</span> {{ $quote->client_name }}</p>
                 <p><span class="text-zinc-500">Vessel / Project:</span> {{ $quote->vessel ?: '-' }}</p>
                 <p><span class="text-zinc-500">Location:</span> {{ $quote->location ?: '-' }}</p>
+                <p><span class="text-zinc-500">Contract Duration:</span> {{ $quote->duration_text ?: '-' }}</p>
+                <p><span class="text-zinc-500">Project Name:</span> {{ $quote->project_name ?: '-' }}</p>
                 <p><span class="text-zinc-500">Payment Terms:</span> {{ $quote->payment_terms ?: '-' }}</p>
             </div>
 
@@ -54,10 +63,18 @@
                                 <td class="px-3 py-2">{{ $line->category }}</td>
                                 <td class="px-3 py-2">{{ $line->qty }}</td>
                                 <td class="px-3 py-2">{{ $line->basis }}</td>
-                                <td class="px-3 py-2">{{ $quote->currency }} {{ number_format((float) $line->rate, 2) }}</td>
-                                <td class="px-3 py-2">{{ $line->duration }}</td>
                                 <td class="px-3 py-2">
-                                    {{ $quote->currency }} {{ number_format((float) $line->qty * (float) $line->rate * (float) $line->duration, 2) }}
+                                    @if ($line->basis === 'Month')
+                                        {{ $quote->currency }} {{ number_format((float) $line->monthly_rate, 2) }}
+                                    @elseif ($line->basis === 'Fixed')
+                                        {{ $quote->currency }} {{ number_format((float) $line->manual_total, 2) }}
+                                    @else
+                                        {{ $quote->currency }} {{ number_format((float) $line->rate, 2) }}
+                                    @endif
+                                </td>
+                                <td class="px-3 py-2">{{ $line->basis === 'Month' ? $line->duration_months : $line->duration_days }}</td>
+                                <td class="px-3 py-2">
+                                    {{ $quote->currency }} {{ number_format((float) $line->line_total, 2) }}
                                 </td>
                             </tr>
                         @empty
@@ -73,6 +90,28 @@
                         </tr>
                     </tfoot>
                 </table>
+            </div>
+
+            <div class="mt-8 grid gap-6 text-sm md:grid-cols-2">
+                <div>
+                    <p class="font-medium">Terms & Conditions</p>
+                    <p class="mt-2 text-zinc-600 dark:text-zinc-300">{{ $quote->terms_conditions ?: '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-medium">Special Conditions</p>
+                    <p class="mt-2 text-zinc-600 dark:text-zinc-300">{{ $quote->special_conditions ?: '-' }}</p>
+                </div>
+            </div>
+
+            <div class="mt-10 grid gap-8 text-sm md:grid-cols-2">
+                <div class="border-t border-zinc-300 pt-3 dark:border-zinc-600">
+                    <p class="font-medium">Authorized Signatory (Client)</p>
+                    <p class="text-zinc-500">Name / Signature / Date</p>
+                </div>
+                <div class="border-t border-zinc-300 pt-3 dark:border-zinc-600">
+                    <p class="font-medium">Authorized Signatory (OMS)</p>
+                    <p class="text-zinc-500">Name / Signature / Date</p>
+                </div>
             </div>
         </div>
     </div>

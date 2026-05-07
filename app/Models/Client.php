@@ -19,6 +19,6 @@ class Client extends Model
      */
     public function quotes(): HasMany
     {
-        return $this->hasMany(Quote::class, 'client_name', 'name');
+        return $this->hasMany(Quote::class);
     }
 }

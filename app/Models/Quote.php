@@ -6,6 +6,7 @@ use Database\Factories\QuoteFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'expiry_date',
     'status',
     'currency',
+    'client_id',
     'client_name',
     'client_po',
     'vessel',
@@ -23,6 +25,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'end_date',
     'payment_terms',
     'scope',
+    'duration_text',
+    'project_name',
+    'terms_conditions',
+    'special_conditions',
+    'renewal_notice_days',
+    'terms',
+    'renewed_from_expiry_date',
     'total_amount',
 ])]
 class Quote extends Model
@@ -40,8 +49,19 @@ class Quote extends Model
             'expiry_date' => 'date',
             'start_date' => 'date',
             'end_date' => 'date',
+            'renewed_from_expiry_date' => 'date',
+            'renewal_notice_days' => 'integer',
+            'terms' => 'array',
             'total_amount' => 'decimal:2',
         ];
+    }
+
+    /**
+     * @return BelongsTo<Client, $this>
+     */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 
     /**
