@@ -96,28 +96,6 @@
                                         </flux:tooltip>
                                     </div>
 
-                                    <flux:modal :name="'delete-quote-'.$quote->id" class="max-w-md">
-                                        <div class="space-y-6">
-                                            <div>
-                                                <flux:heading size="lg">Delete quote?</flux:heading>
-                                                <flux:subheading>
-                                                    This action cannot be undone. Quote <span class="font-semibold">{{ $quote->doc_no }}</span> will be permanently deleted.
-                                                </flux:subheading>
-                                            </div>
-
-                                            <div class="flex justify-end gap-2">
-                                                <flux:modal.close>
-                                                    <flux:button variant="filled">Cancel</flux:button>
-                                                </flux:modal.close>
-
-                                                <form method="POST" action="{{ route('quotes.destroy', $quote) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <flux:button variant="danger" type="submit">Delete</flux:button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </flux:modal>
                                 </td>
                             </tr>
                         @empty
@@ -135,6 +113,31 @@
                 </table>
             </div>
         </div>
+
+        @foreach ($quotes as $quote)
+            <flux:modal :name="'delete-quote-'.$quote->id" class="max-w-md">
+                <div class="space-y-6">
+                    <div>
+                        <flux:heading size="lg">Delete quote?</flux:heading>
+                        <flux:subheading>
+                            This action cannot be undone. Quote <span class="font-semibold">{{ $quote->doc_no }}</span> will be permanently deleted.
+                        </flux:subheading>
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        <flux:modal.close>
+                            <flux:button variant="filled">Cancel</flux:button>
+                        </flux:modal.close>
+
+                        <form method="POST" action="{{ route('quotes.destroy', $quote) }}">
+                            @csrf
+                            @method('DELETE')
+                            <flux:button variant="danger" type="submit">Delete</flux:button>
+                        </form>
+                    </div>
+                </div>
+            </flux:modal>
+        @endforeach
 
         <div class="text-sm text-zinc-500">
             {{ $quotes->withQueryString()->links() }}

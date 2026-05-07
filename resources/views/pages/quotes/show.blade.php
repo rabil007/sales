@@ -1,49 +1,56 @@
 <x-layouts::app :title="__('Quote Preview')">
-    <div class="space-y-4">
-        <div class="flex items-center justify-between no-print">
-            <flux:heading size="lg">Quote Preview</flux:heading>
-            <div class="flex gap-2">
-                <flux:button variant="filled" :href="route('quotes.edit', $quote)" wire:navigate>Edit Quote</flux:button>
-                <flux:button variant="primary" onclick="window.print()" type="button">Print / Export PDF</flux:button>
+    <div class="space-y-6">
+        <div class="flex flex-wrap items-end justify-between gap-4 no-print">
+            <div>
+                <flux:heading size="lg">Quote Preview</flux:heading>
+                <flux:text class="text-zinc-500">Commercial document view ready for sharing and print export.</flux:text>
+            </div>
+            <div class="flex items-center gap-2">
+                <flux:button variant="ghost" icon="pencil" :href="route('quotes.edit', $quote)" wire:navigate>Edit Quote</flux:button>
+                <flux:button variant="primary" icon="printer" onclick="window.print()" type="button">Print / Export PDF</flux:button>
             </div>
         </div>
-        <div class="flex flex-wrap gap-2 no-print">
-            <form method="POST" action="{{ route('quotes.send', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="ghost">Mark Sent</flux:button></form>
-            <form method="POST" action="{{ route('quotes.approve', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="ghost">Approve</flux:button></form>
-            <form method="POST" action="{{ route('quotes.activate', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="ghost">Activate</flux:button></form>
-            <form method="POST" action="{{ route('quotes.expire', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="ghost">Expire</flux:button></form>
-            <form method="POST" action="{{ route('quotes.renew', $quote) }}">@csrf <flux:button size="sm" type="submit" variant="filled">Renew</flux:button></form>
-        </div>
 
-        <div class="mx-auto max-w-4xl rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-900">
-            <div class="mb-6 flex items-start justify-between">
+        <div class="mx-auto max-w-5xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="mb-8 flex items-start justify-between gap-4">
                 <div>
-                    <h1 class="text-xl font-semibold">Overseas Marine Services</h1>
+                    <h1 class="text-2xl font-semibold tracking-tight">Overseas Marine Services</h1>
                     <p class="text-sm text-zinc-500">{{ in_array($quote->status, ['Draft', 'Sent'], true) ? 'Proposal / Quotation' : 'Crew Supply Agreement / Purchase Order' }}</p>
                 </div>
-                <div class="text-right">
-                    <p class="font-medium">{{ $quote->doc_no }}</p>
+                <div class="text-right space-y-1">
+                    <p class="font-mono text-sm font-semibold">{{ $quote->doc_no }}</p>
                     <p class="text-sm text-zinc-500">Issued: {{ optional($quote->issue_date)->toDateString() }}</p>
+                    <flux:badge :color="match($quote->status) {
+                        'Active' => 'green',
+                        'Approved' => 'lime',
+                        'Sent' => 'blue',
+                        'Expired' => 'red',
+                        default => 'zinc'
+                    }" size="sm">
+                        {{ $quote->status }}
+                    </flux:badge>
                 </div>
             </div>
 
-            <div class="mb-6 grid gap-4 rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-800">
-                <p><span class="text-zinc-500">Client:</span> {{ $quote->client_name }}</p>
-                <p><span class="text-zinc-500">Vessel / Project:</span> {{ $quote->vessel ?: '-' }}</p>
-                <p><span class="text-zinc-500">Location:</span> {{ $quote->location ?: '-' }}</p>
-                <p><span class="text-zinc-500">Contract Duration:</span> {{ $quote->duration_text ?: '-' }}</p>
-                <p><span class="text-zinc-500">Project Name:</span> {{ $quote->project_name ?: '-' }}</p>
-                <p><span class="text-zinc-500">Payment Terms:</span> {{ $quote->payment_terms ?: '-' }}</p>
+            <div class="mb-8 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/60">
+                <div class="grid gap-3 text-sm md:grid-cols-2">
+                    <p><span class="text-zinc-500">Client:</span> <span class="font-medium">{{ $quote->client_name }}</span></p>
+                    <p><span class="text-zinc-500">Payment Terms:</span> <span class="font-medium">{{ $quote->payment_terms ?: '-' }}</span></p>
+                    <p><span class="text-zinc-500">Vessel / Project:</span> <span class="font-medium">{{ $quote->vessel ?: '-' }}</span></p>
+                    <p><span class="text-zinc-500">Project Name:</span> <span class="font-medium">{{ $quote->project_name ?: '-' }}</span></p>
+                    <p><span class="text-zinc-500">Location:</span> <span class="font-medium">{{ $quote->location ?: '-' }}</span></p>
+                    <p><span class="text-zinc-500">Contract Duration:</span> <span class="font-medium">{{ $quote->duration_text ?: '-' }}</span></p>
+                </div>
             </div>
 
-            <div class="mb-6 text-sm leading-6">
-                <p class="mb-2 font-medium">Scope of Services</p>
+            <div class="mb-8 text-sm leading-6">
+                <p class="mb-2 font-semibold">Scope of Services</p>
                 <p class="text-zinc-600 dark:text-zinc-300">{{ $quote->scope ?: '-' }}</p>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-700">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-zinc-50 dark:bg-zinc-800">
+                    <thead class="bg-zinc-50 dark:bg-zinc-800/80">
                         <tr class="text-left text-xs uppercase tracking-wide text-zinc-500">
                             <th class="px-3 py-2">#</th>
                             <th class="px-3 py-2">Rank</th>
@@ -94,11 +101,11 @@
 
             <div class="mt-8 grid gap-6 text-sm md:grid-cols-2">
                 <div>
-                    <p class="font-medium">Terms & Conditions</p>
+                    <p class="font-semibold">Terms & Conditions</p>
                     <p class="mt-2 text-zinc-600 dark:text-zinc-300">{{ $quote->terms_conditions ?: '-' }}</p>
                 </div>
                 <div>
-                    <p class="font-medium">Special Conditions</p>
+                    <p class="font-semibold">Special Conditions</p>
                     <p class="mt-2 text-zinc-600 dark:text-zinc-300">{{ $quote->special_conditions ?: '-' }}</p>
                 </div>
             </div>
