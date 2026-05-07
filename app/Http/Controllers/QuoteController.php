@@ -53,6 +53,30 @@ class QuoteController extends Controller
                 return [$date->format('M Y') => (float) ($monthlyValue[$key] ?? 0)];
             });
 
+        $monthlyQuoteCount = Quote::query()
+            ->whereNotNull('issue_date')
+            ->where('issue_date', '>=', now()->subMonths(5)->startOfMonth())
+            ->get(['issue_date'])
+            ->groupBy(fn (Quote $quote) => optional($quote->issue_date)->format('Y-m'))
+            ->map(fn ($quotes) => (int) $quotes->count());
+
+        $monthlyCountChart = collect(range(0, 5))
+            ->mapWithKeys(function (int $offset) use ($monthlyQuoteCount): array {
+                $date = now()->subMonths(5 - $offset)->startOfMonth();
+                $key = $date->format('Y-m');
+
+                return [$date->format('M Y') => (int) ($monthlyQuoteCount[$key] ?? 0)];
+            });
+
+        $typeMixChart = Quote::query()
+            ->select('type', DB::raw('COUNT(*) as count'))
+            ->whereNotNull('type')
+            ->groupBy('type')
+            ->orderByDesc('count')
+            ->limit(6)
+            ->pluck('count', 'type')
+            ->map(fn ($count): int => (int) $count);
+
         return view('dashboard', [
             'totalQuotes' => Quote::query()->count(),
             'activeAgreements' => Quote::query()->where('status', 'Active')->count(),
@@ -70,6 +94,15 @@ class QuoteController extends Controller
             'expiredCount' => (int) ($statusCounts['Expired'] ?? 0),
             'topClients' => $topClients,
             'monthlyChart' => $monthlyChart,
+            'monthlyCountChart' => $monthlyCountChart,
+            'statusChart' => collect([
+                'Draft' => (int) ($statusCounts['Draft'] ?? 0),
+                'Sent' => (int) ($statusCounts['Sent'] ?? 0),
+                'Approved' => (int) ($statusCounts['Approved'] ?? 0),
+                'Active' => (int) ($statusCounts['Active'] ?? 0),
+                'Expired' => (int) ($statusCounts['Expired'] ?? 0),
+            ]),
+            'typeMixChart' => $typeMixChart,
             'recentQuotes' => Quote::query()->latest('id')->limit(5)->get(),
         ]);
     }

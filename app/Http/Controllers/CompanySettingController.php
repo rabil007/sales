@@ -41,9 +41,21 @@ class CompanySettingController extends Controller
         }
 
         foreach ($data['settings'] as $key => $value) {
-            CompanySetting::query()
-                ->where('key', $key)
-                ->update(['value' => $value]);
+            CompanySetting::query()->updateOrCreate(
+                ['key' => $key],
+                [
+                    'label' => match ($key) {
+                        'app_name' => 'Application Name',
+                        'app_logo_path' => 'Application Logo Path',
+                        default => str($key)->replace('_', ' ')->title()->toString(),
+                    },
+                    'group' => match ($key) {
+                        'app_name', 'app_logo_path' => 'application',
+                        default => 'general',
+                    },
+                    'value' => (string) $value,
+                ],
+            );
         }
 
         return back()->with('status', 'Company settings saved.');

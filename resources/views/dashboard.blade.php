@@ -1,5 +1,10 @@
 <x-layouts::app :title="__('Dashboard')">
     <div class="space-y-6">
+        <div>
+            <flux:heading size="lg">Dashboard</flux:heading>
+            <flux:text class="text-zinc-500">Monitor quote performance, value trends, and agreement pipeline.</flux:text>
+        </div>
+
         {{-- Metric Cards --}}
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
@@ -122,6 +127,91 @@
                                 </div>
                             </div>
                         @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-4 xl:grid-cols-3">
+            <div class="rounded-2xl border border-zinc-200/70 bg-white/90 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
+                <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                    <flux:heading size="sm">Monthly Quote Count (Last 6 Months)</flux:heading>
+                </div>
+                <div class="p-4">
+                    @php
+                        $maxMonthlyCount = max((int) $monthlyCountChart->max(), 1);
+                    @endphp
+                    <div class="space-y-3">
+                        @foreach ($monthlyCountChart as $monthLabel => $monthCount)
+                            @php
+                                $barWidth = max((int) round(($monthCount / $maxMonthlyCount) * 100), 4);
+                            @endphp
+                            <div>
+                                <div class="mb-1 flex items-center justify-between text-xs">
+                                    <span class="text-zinc-500">{{ $monthLabel }}</span>
+                                    <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $monthCount }}</span>
+                                </div>
+                                <div class="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                    <div class="h-2 rounded-full bg-emerald-500" style="width: {{ $barWidth }}%"></div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-zinc-200/70 bg-white/90 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
+                <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                    <flux:heading size="sm">Status Distribution</flux:heading>
+                </div>
+                <div class="p-4">
+                    @php
+                        $maxStatusCount = max((int) $statusChart->max(), 1);
+                    @endphp
+                    <div class="space-y-3">
+                        @foreach ($statusChart as $statusLabel => $statusCount)
+                            @php
+                                $barWidth = max((int) round(($statusCount / $maxStatusCount) * 100), 4);
+                            @endphp
+                            <div>
+                                <div class="mb-1 flex items-center justify-between text-xs">
+                                    <span class="text-zinc-500">{{ $statusLabel }}</span>
+                                    <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $statusCount }}</span>
+                                </div>
+                                <div class="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                    <div class="h-2 rounded-full bg-indigo-500" style="width: {{ $barWidth }}%"></div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-2xl border border-zinc-200/70 bg-white/90 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
+                <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                    <flux:heading size="sm">Agreement Type Mix</flux:heading>
+                </div>
+                <div class="p-4">
+                    @php
+                        $maxTypeCount = max((int) $typeMixChart->max(), 1);
+                    @endphp
+                    <div class="space-y-3">
+                        @forelse ($typeMixChart as $typeLabel => $typeCount)
+                            @php
+                                $barWidth = max((int) round(($typeCount / $maxTypeCount) * 100), 4);
+                            @endphp
+                            <div>
+                                <div class="mb-1 flex items-center justify-between text-xs">
+                                    <span class="text-zinc-500">{{ $typeLabel }}</span>
+                                    <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $typeCount }}</span>
+                                </div>
+                                <div class="h-2 rounded-full bg-zinc-100 dark:bg-zinc-800">
+                                    <div class="h-2 rounded-full bg-amber-500" style="width: {{ $barWidth }}%"></div>
+                                </div>
+                            </div>
+                        @empty
+                            <p class="text-sm text-zinc-500">No type analytics available yet.</p>
+                        @endforelse
                     </div>
                 </div>
             </div>

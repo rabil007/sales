@@ -1,6 +1,10 @@
 <?php
 
+use App\Models\CompanySetting;
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('profile page is displayed', function () {
@@ -43,6 +47,35 @@ test('email verification status is unchanged when email address is unchanged', f
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
+test('application branding can be updated from profile settings', function () {
+    Storage::fake('public');
+
+    CompanySetting::query()->updateOrCreate(
+        ['key' => 'app_name'],
+        ['label' => 'Application Name', 'group' => 'application', 'value' => 'OMS Sales'],
+    );
+    CompanySetting::query()->updateOrCreate(
+        ['key' => 'app_logo_path'],
+        ['label' => 'Application Logo Path', 'group' => 'application', 'value' => 'overseas-marine logo.png'],
+    );
+
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    $response = Livewire::test('pages::settings.branding')
+        ->set('appName', 'Sales Control')
+        ->set('appLogo', UploadedFile::fake()->image('brand.png'))
+        ->call('updateApplicationBranding');
+
+    $response->assertHasNoErrors();
+
+    expect(CompanySetting::get('app_name'))->toBe('Sales Control');
+    $logoPath = CompanySetting::get('app_logo_path');
+    expect($logoPath)->toStartWith('app-branding/')
+        ->and(Storage::disk('public')->exists($logoPath))->toBeTrue();
+});
+
 test('user can delete their account', function () {
     $user = User::factory()->create();
 
@@ -57,7 +90,7 @@ test('user can delete their account', function () {
         ->assertRedirect('/');
 
     expect($user->fresh())->toBeNull();
-    expect(auth()->check())->toBeFalse();
+    expect(Auth::check())->toBeFalse();
 });
 
 test('correct password must be provided to delete account', function () {

@@ -30,6 +30,9 @@ test('authenticated users can visit the dashboard', function () {
         ->assertSee('Average Quote Value')
         ->assertSee('Top Clients by Quote Value')
         ->assertSee('Monthly Quote Value')
+        ->assertSee('Monthly Quote Count')
+        ->assertSee('Status Distribution')
+        ->assertSee('Agreement Type Mix')
         ->assertSee('ADNOC Offshore')
         ->assertSee('DP World');
 });
