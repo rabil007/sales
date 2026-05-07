@@ -28,10 +28,22 @@
             color: #374151;
         }
         .footer-company { font-size: 8.5px; font-weight: 700; color: #111827; margin-bottom: 3px; }
-        .footer-grid { width: 100%; border-collapse: collapse; }
-        .footer-grid td { padding: 0 4px 0 0; vertical-align: middle; white-space: nowrap; }
-        .footer-grid .footer-page { text-align: right; width: 14%; white-space: nowrap; }
-        .footer-icon { display: inline-block; width: 11px; height: 11px; border-radius: 50%; background: #1e40af; color: #fff; text-align: center; line-height: 11px; font-size: 6.5px; font-weight: 700; margin-right: 2px; vertical-align: middle; }
+        .footer-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .footer-grid td {
+            padding: 0 6px 0 0;
+            vertical-align: top;
+            font-size: 7.6px;
+            line-height: 1.25;
+        }
+        .footer-grid .footer-page {
+            text-align: right;
+            width: 12%;
+            white-space: nowrap;
+            vertical-align: middle;
+            padding-right: 0;
+        }
+        .footer-grid .footer-col { width: 22%; white-space: normal; word-break: break-word; }
+        .footer-icon { display: inline-block; width: 13px; height: 13px; margin-right: 4px; vertical-align: middle; }
 
         /* ── BODY TEXT ──────────────────────────────────────────── */
         .to-block { margin: 10px 0 10px; font-size: 10.5px; line-height: 1.55; }
@@ -92,6 +104,17 @@
             $cs['transport_rate_4'] ?? 'xx.00',
             $cs['transport_rate_5'] ?? 'xxx.00',
         ];
+
+        // Footer icons (SVG data URI for reliable DOMPDF rendering)
+        $footerIconSvg = [
+            'address' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#1e40af"/><path d="M8 3.2a2.7 2.7 0 0 0-2.7 2.7c0 2 2.7 5.9 2.7 5.9s2.7-3.9 2.7-5.9A2.7 2.7 0 0 0 8 3.2Zm0 3.6A1.1 1.1 0 1 1 8 4.6a1.1 1.1 0 0 1 0 2.2Z" fill="#fff"/></svg>',
+            'phone' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#1e40af"/><path d="M5 4.3c.2-.2.5-.2.7 0l1.2 1c.2.2.2.5.1.7l-.6.9a7.5 7.5 0 0 0 2.7 2.7l.9-.6c.2-.1.5-.1.7.1l1 1.2c.2.2.2.5 0 .7l-.6.6c-.6.6-1.4.8-2.2.6a9.7 9.7 0 0 1-4.1-2.7A9.7 9.7 0 0 1 4 5.4c-.2-.8 0-1.6.6-2.2l.4-.5Z" fill="#fff"/></svg>',
+            'email' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#1e40af"/><path d="M4 5.1h8a.5.5 0 0 1 .5.5v4.8a.5.5 0 0 1-.5.5H4a.5.5 0 0 1-.5-.5V5.6a.5.5 0 0 1 .5-.5Zm0 1 4 2.6 4-2.6" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+            'web' => '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#1e40af"/><path d="M8 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm0 0c1.1 1 1.1 7 0 8m0-8c-1.1 1-1.1 7 0 8M4 8h8M4.7 6h6.6" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg>',
+        ];
+        $footerIcons = collect($footerIconSvg)->mapWithKeys(
+            fn (string $svg, string $key) => [$key => 'data:image/svg+xml;base64,'.base64_encode($svg)]
+        )->all();
 
         // ── Quote fields ────────────────────────────────────────────
         $docNo      = str_replace('-', '/', $quote->doc_no);
@@ -235,10 +258,10 @@
             <div class="footer-company">{{ $companyName }}.</div>
             <table class="footer-grid">
                 <tr>
-                    <td><span class="footer-icon">A</span> {{ $companyAddress }}</td>
-                    <td><span class="footer-icon">P</span> {{ $companyPhone }}</td>
-                    <td><span class="footer-icon">@</span> {{ $companyEmail }}</td>
-                    <td><span class="footer-icon">W</span> {{ $companyWebsite }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['address'] }}" alt=""> {{ $companyAddress }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['phone'] }}" alt=""> {{ $companyPhone }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['email'] }}" alt=""> {{ $companyEmail }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['web'] }}" alt=""> {{ $companyWebsite }}</td>
                     <td class="footer-page">Page 1 of 4</td>
                 </tr>
             </table>
@@ -318,10 +341,10 @@
             <div class="footer-company">{{ $companyName }}.</div>
             <table class="footer-grid">
                 <tr>
-                    <td><span class="footer-icon">A</span> {{ $companyAddress }}</td>
-                    <td><span class="footer-icon">P</span> {{ $companyPhone }}</td>
-                    <td><span class="footer-icon">@</span> {{ $companyEmail }}</td>
-                    <td><span class="footer-icon">W</span> {{ $companyWebsite }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['address'] }}" alt=""> {{ $companyAddress }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['phone'] }}" alt=""> {{ $companyPhone }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['email'] }}" alt=""> {{ $companyEmail }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['web'] }}" alt=""> {{ $companyWebsite }}</td>
                     <td class="footer-page">Page 2 of 4</td>
                 </tr>
             </table>
@@ -420,10 +443,10 @@
             <div class="footer-company">{{ $companyName }}.</div>
             <table class="footer-grid">
                 <tr>
-                    <td><span class="footer-icon">A</span> {{ $companyAddress }}</td>
-                    <td><span class="footer-icon">P</span> {{ $companyPhone }}</td>
-                    <td><span class="footer-icon">@</span> {{ $companyEmail }}</td>
-                    <td><span class="footer-icon">W</span> {{ $companyWebsite }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['address'] }}" alt=""> {{ $companyAddress }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['phone'] }}" alt=""> {{ $companyPhone }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['email'] }}" alt=""> {{ $companyEmail }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['web'] }}" alt=""> {{ $companyWebsite }}</td>
                     <td class="footer-page">Page 3 of 4</td>
                 </tr>
             </table>
@@ -510,10 +533,10 @@
             <div class="footer-company">{{ $companyName }}.</div>
             <table class="footer-grid">
                 <tr>
-                    <td><span class="footer-icon">A</span> {{ $companyAddress }}</td>
-                    <td><span class="footer-icon">P</span> {{ $companyPhone }}</td>
-                    <td><span class="footer-icon">@</span> {{ $companyEmail }}</td>
-                    <td><span class="footer-icon">W</span> {{ $companyWebsite }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['address'] }}" alt=""> {{ $companyAddress }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['phone'] }}" alt=""> {{ $companyPhone }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['email'] }}" alt=""> {{ $companyEmail }}</td>
+                    <td class="footer-col"><img class="footer-icon" src="{{ $footerIcons['web'] }}" alt=""> {{ $companyWebsite }}</td>
                     <td class="footer-page">Page 4 of 4</td>
                 </tr>
             </table>
