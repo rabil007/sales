@@ -42,6 +42,7 @@
         .bullet-list li { margin-bottom: 2px; }
         .para { margin-bottom: 7px; }
         .sign-off { margin-top: 28px; font-size: 10.5px; line-height: 1.7; }
+        .special-conditions { margin-top: 10px; padding: 6px 8px; border-left: 3px solid #374151; font-size: 10px; }
 
         /* ── ANNEXURE ────────────────────────────────────────────── */
         .annex-title { text-align: center; font-weight: 700; text-decoration: underline; margin: 10px 0 12px; font-size: 11px; text-transform: uppercase; }
@@ -82,25 +83,55 @@
         $signatoryName    = $cs['signatory_name']     ?? '';
         $signatoryRole    = $cs['signatory_role']     ?? '';
 
+        // Annexure II rates
+        $accomSingle      = $cs['accom_single_rate']  ?? 'xx.00';
+        $accomDouble      = $cs['accom_double_rate']  ?? 'xx.00';
+        $accomEvents      = $cs['accom_events_rate']  ?? 'xx.00';
+        $transportRates   = [
+            $cs['transport_rate_1'] ?? 'xx.00',
+            $cs['transport_rate_2'] ?? 'xx.00',
+            $cs['transport_rate_3'] ?? 'xx.00',
+            $cs['transport_rate_4'] ?? 'xx.00',
+            $cs['transport_rate_5'] ?? 'xxx.00',
+        ];
+
         // ── Quote fields ────────────────────────────────────────────
         $docNo      = str_replace('-', '/', $quote->doc_no);
-        $issueDate  = optional($quote->issue_date)->format('d') . '<sup>' . optional($quote->issue_date)->format('S') . '</sup> ' . optional($quote->issue_date)->format('M Y');
-        $clientName = $quote->client_name ?: 'Client Name';
-        $location   = $quote->location ?: 'Abu Dhabi, UAE';
-        $subject    = $quote->project_name ?: 'Crew Requirements';
-        $scope      = $quote->scope ?: 'Source and Supply of appropriate crew who will be under Supplier payroll and seconded to Client. Rates provided as per Annex I';
-        $duration   = $quote->duration_text ?: 'One (1) year';
-        $vessel     = $quote->vessel;
-        $clientPo   = $quote->client_po;
-        $year       = optional($quote->issue_date)->year ?? now()->year;
+        $issueDate  = optional($quote->issue_date)->format('d')
+                    . '<sup>' . optional($quote->issue_date)->format('S') . '</sup> '
+                    . optional($quote->issue_date)->format('M Y');
+        $expiryDate = $quote->expiry_date
+                    ? optional($quote->expiry_date)->format('d')
+                      . '<sup>' . optional($quote->expiry_date)->format('S') . '</sup> '
+                      . optional($quote->expiry_date)->format('M Y')
+                    : null;
+        $startDate  = optional($quote->start_date)->format('d M Y');
+        $endDate    = optional($quote->end_date)->format('d M Y');
+
+        $clientName        = $quote->client_name ?: 'Client Name';
+        $location          = $quote->location ?: 'Abu Dhabi, UAE';
+        $subject           = $quote->project_name ?: 'Crew Requirements';
+        $scope             = $quote->scope ?: 'Source and Supply of appropriate crew who will be under Supplier payroll and seconded to Client. Rates provided as per Annex I';
+        $duration          = $quote->duration_text ?: 'One (1) year';
+        $vessel            = $quote->vessel;
+        $clientPo          = $quote->client_po;
+        $specialConditions = $quote->special_conditions;
+        $year              = optional($quote->issue_date)->year ?? now()->year;
 
         // ── Client address block ────────────────────────────────────
-        $client              = $quote->client;
-        $toContactPerson     = $client?->contact_person ?: null;
-        $toContactDesig      = $client?->contact_designation ?: null;
-        $toCompany           = $client?->company ?: $clientName;
-        $toAddress           = $client?->address ?: null;
-        $toCity              = $client?->city ?: $location;
+        $client          = $quote->client;
+        $toContactPerson = $client?->contact_person ?: null;
+        $toContactDesig  = $client?->contact_designation ?: null;
+        $toCompany       = $client?->company ?: $clientName;
+        $toAddress       = $client?->address ?: null;
+        $toCity          = $client?->city ?: $location;
+
+        // ── Crew line basis detection (for adaptive table headers) ──
+        $lines          = $quote->crewLines;
+        $isAllMonth     = $lines->isNotEmpty() && $lines->every(fn ($l) => $l->basis === 'Month');
+        $hasMixedBasis  = $lines->isNotEmpty() && $lines->pluck('basis')->unique()->count() > 1;
+        $rateHeader     = $isAllMonth ? "Monthly Rate Per\nPax ({$quote->currency})" : "Daily Rate Per\nPax ({$quote->currency})";
+        $durationHeader = $isAllMonth ? "Duration\n(Months)" : "Duration\n(Days)";
     @endphp
 
     {{-- ═══════════════════ PAGE 1 ═══════════════════ --}}
@@ -118,8 +149,10 @@
                 <td class="meta-cell">
                     <strong>Quotation No.:</strong> {{ $docNo }}<br>
                     <strong>Date:</strong> {!! $issueDate !!}
+                    @if ($expiryDate)<br><strong>Valid Until:</strong> {!! $expiryDate !!}@endif
                     @if ($clientPo)<br><strong>Client PO:</strong> {{ $clientPo }}@endif
                     @if ($vessel)<br><strong>Vessel/Project:</strong> {{ $vessel }}@endif
+                    @if ($startDate && $endDate)<br><strong>Contract Period:</strong> {{ $startDate }} – {{ $endDate }}@endif
                 </td>
             </tr>
         </table>
@@ -159,7 +192,8 @@
         <div class="section">
             <div class="section-title">4.&nbsp; Duration &amp; Termination:</div>
             This proposal is effective upon acceptance by the Client and will continue for firm <strong>{{ $duration }}</strong>
-            from the mobilisation date, with the option to extend for additional 30 days. If Client terminates
+            from the mobilisation date@if ($startDate && $endDate) ({{ $startDate }} to {{ $endDate }})@endif,
+            with the option to extend for additional 30 days. If Client terminates
             the agreement before completing the firm period, the Supplier must be reimbursed for the balance period
             at daily rates as per Annex I. Supplier can terminate the agreement with 2 days' notice period if the
             payment as per clause 6 is not fulfilled.
@@ -249,6 +283,14 @@
             </div>
         </div>
 
+        {{-- #2 Special / Additional Conditions (only if filled on the quote) --}}
+        @if ($specialConditions)
+            <div class="section">
+                <div class="section-title">10.&nbsp; Special Conditions:</div>
+                <div class="special-conditions">{{ $specialConditions }}</div>
+            </div>
+        @endif
+
         <div class="sign-off">
             <strong>For {{ $companyName }}</strong><br>
             <br><br>
@@ -291,35 +333,51 @@
 
         <div class="annex-title">ANNEXURE I: SCHEDULE OF FEES</div>
 
+        {{-- #4 Adaptive headers based on crew line basis --}}
         <table class="tbl">
             <thead>
                 <tr>
                     <th style="width: 7%;">Sl<br>No.</th>
-                    <th class="left" style="width: 38%;">Position</th>
+                    <th class="left" style="width: {{ $hasMixedBasis ? '30%' : '38%' }};">Position</th>
+                    @if ($hasMixedBasis)
+                        <th style="width: 9%;">Basis</th>
+                    @endif
                     <th style="width: 8%;">Qty</th>
-                    <th style="width: 14%;">Duration<br>(Days)</th>
-                    <th style="width: 20%;">Daily Rate Per<br>Pax ({{ $quote->currency }})</th>
+                    <th style="width: 14%;">{!! nl2br(e($durationHeader)) !!}</th>
+                    <th style="width: 20%;">{!! nl2br(e($rateHeader)) !!}</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($quote->crewLines as $line)
+                @forelse($lines as $line)
+                    @php
+                        $lineDuration = match ($line->basis) {
+                            'Month' => $line->duration_months ?: ($line->duration ?: 'xxx'),
+                            default => $line->duration_days   ?: ($line->duration ?: 'xxx'),
+                        };
+                        $lineRate = $line->basis === 'Month'
+                            ? number_format((float) $line->monthly_rate, 2)
+                            : number_format((float) $line->rate, 2);
+                    @endphp
                     <tr>
                         <td class="center">{{ $loop->iteration }}</td>
                         <td class="left">{{ $line->rank ?: '-' }}</td>
+                        @if ($hasMixedBasis)
+                            <td class="center">{{ $line->basis }}</td>
+                        @endif
                         <td class="center">{{ $line->qty }}</td>
-                        <td class="center">{{ $line->duration_days ?: ($line->duration ?: 'xxx') }}</td>
-                        <td class="right">{{ number_format((float) $line->rate, 2) }}</td>
+                        <td class="center">{{ $lineDuration }}</td>
+                        <td class="right">{{ $lineRate }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="center">No crew lines available.</td>
+                        <td colspan="{{ $hasMixedBasis ? 6 : 5 }}" class="center">No crew lines available.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
 
         <div class="notes">
-            <strong>*The proposed lump sum daily rate includes the following:</strong>
+            <strong>*The proposed lump sum {{ $isAllMonth ? 'monthly' : 'daily' }} rate includes the following:</strong>
             <ul class="bullet-list">
                 <li>Crew wages</li>
                 <li>ADNOC Offshore Medicals</li>
@@ -393,13 +451,13 @@
             <tbody>
                 <tr>
                     <td class="left">Room with Full Board Including 2 PCs Laundry Per Guest</td>
-                    <td class="center">AED xxx.00</td>
-                    <td class="center">AED xx.00</td>
+                    <td class="center">AED {{ $accomSingle }}</td>
+                    <td class="center">AED {{ $accomDouble }}</td>
                     <td class="center">01<sup>st</sup> JAN {{ $year }}&ndash; 31<sup>st</sup> DEC {{ $year }}</td>
                 </tr>
                 <tr>
                     <td class="left">Supplementary/Additional Charges during ADIPEC, Formula 1, WEFS &amp; IDEX functions</td>
-                    <td class="center" colspan="2">AED xx.00</td>
+                    <td class="center" colspan="2">AED {{ $accomEvents }}</td>
                     <td class="center">As per UAE {{ $year }} Calendar</td>
                 </tr>
             </tbody>
@@ -416,11 +474,11 @@
                 </tr>
             </thead>
             <tbody>
-                <tr><td class="center">1</td><td class="left">Abu Dhabi City limits to Free Port (within 5 KM)</td><td class="right">xx.00</td></tr>
-                <tr><td class="center">2</td><td class="left">Abu Dhabi City to Abu Dhabi Airport/ Bateen airport</td><td class="right">xx.00</td></tr>
-                <tr><td class="center">3</td><td class="left">ADNEC / Our Hotel Area to City limits</td><td class="right">xx.00</td></tr>
-                <tr><td class="center">4</td><td class="left">Abu Dhabi City to Musaffah</td><td class="right">xx.00</td></tr>
-                <tr><td class="center">5</td><td class="left">Abu Dhabi City to Dubai Airport/Dubai City Limits</td><td class="right">xxx.00</td></tr>
+                <tr><td class="center">1</td><td class="left">Abu Dhabi City limits to Free Port (within 5 KM)</td><td class="right">{{ $transportRates[0] }}</td></tr>
+                <tr><td class="center">2</td><td class="left">Abu Dhabi City to Abu Dhabi Airport/ Bateen airport</td><td class="right">{{ $transportRates[1] }}</td></tr>
+                <tr><td class="center">3</td><td class="left">ADNEC / Our Hotel Area to City limits</td><td class="right">{{ $transportRates[2] }}</td></tr>
+                <tr><td class="center">4</td><td class="left">Abu Dhabi City to Musaffah</td><td class="right">{{ $transportRates[3] }}</td></tr>
+                <tr><td class="center">5</td><td class="left">Abu Dhabi City to Dubai Airport/Dubai City Limits</td><td class="right">{{ $transportRates[4] }}</td></tr>
             </tbody>
         </table>
         <ul class="bullet-list" style="font-size:9.5px; margin-bottom:10px;">
