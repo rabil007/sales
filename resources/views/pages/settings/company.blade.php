@@ -1,9 +1,9 @@
-<x-layouts::app title="Company Settings">
+<x-layouts::app title="Template Settings">
     <div class="space-y-6">
 
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
-                <flux:heading size="lg">Company Settings</flux:heading>
+                <flux:heading size="lg">Template Settings</flux:heading>
                 <flux:text class="text-zinc-500">
                     These values appear on all exported PDF proposals (footer, sign-off, etc.).
                 </flux:text>
