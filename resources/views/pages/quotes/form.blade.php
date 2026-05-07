@@ -1,5 +1,5 @@
 <x-layouts::app :title="$isEdit ? __('Edit Quote') : __('New Quote')">
-    <div class="space-y-4">
+    <div class="space-y-6">
         @if ($errors->any())
             <flux:callout icon="exclamation-triangle" color="red">
                 Please review the form fields and try again.
@@ -7,10 +7,19 @@
         @endif
 
         {{-- Page Header --}}
-        <div class="flex items-center justify-between">
-            <flux:heading size="lg">{{ $isEdit ? 'Edit Quote' : 'Create Quote' }}</flux:heading>
-            <flux:button variant="ghost" icon="arrow-left" :href="route('quotes.index')" wire:navigate>Back to list</flux:button>
+        <div class="flex flex-wrap items-start justify-between gap-4">
+            <div class="space-y-1">
+                <flux:heading size="lg">{{ $isEdit ? __('Edit quote') : __('New quote') }}</flux:heading>
+                <flux:text class="text-zinc-500">{{ __('Work through Details → Crew lines → Terms, then save. PDF preview is available after the quote exists.') }}</flux:text>
+            </div>
+            <flux:button variant="ghost" icon="arrow-left" :href="route('quotes.index')" wire:navigate>{{ __('Back to list') }}</flux:button>
         </div>
+
+        @if (! $isEdit)
+            <flux:callout icon="information-circle" color="zinc" inline>
+                {{ __('Document number is pre-filled; adjust if needed. Choose a client, add at least one crew line with a rank, then review terms before saving.') }}
+            </flux:callout>
+        @endif
 
         <form method="POST" action="{{ $isEdit ? route('quotes.update', $quote) : route('quotes.store') }}" class="space-y-0">
             @csrf
@@ -19,7 +28,7 @@
             @endif
             <input type="hidden" name="client_id" id="client-id-input" value="{{ old('client_id', $quote->client_id) }}">
 
-            <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
                 @if ($isLocked)
                     <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
                         <flux:callout color="amber" icon="lock-closed">
@@ -28,17 +37,30 @@
                     </div>
                 @endif
                 {{-- Tab Navigation --}}
-                <div class="flex gap-1 border-b border-zinc-200 px-4 pt-3 dark:border-zinc-700 text-sm">
-                    <button type="button" data-tab-button="details" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Quote Details</button>
-                    <button type="button" data-tab-button="crew" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Crew Lines</button>
-                    <button type="button" data-tab-button="terms" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Terms</button>
+                <div class="overflow-x-auto border-b border-zinc-200 bg-zinc-50/80 dark:border-zinc-700 dark:bg-zinc-900/80">
+                    <div class="flex min-w-min gap-1 px-2 pt-2 sm:px-4 text-sm">
+                        <button type="button" data-tab-button="details" aria-selected="true" class="tab-button inline-flex shrink-0 items-center gap-2 rounded-t-md px-3 py-2.5 font-medium transition-colors sm:px-4">
+                            <flux:icon.document-text class="size-4 opacity-70" />
+                            <span class="sm:hidden">{{ __('Details') }}</span>
+                            <span class="hidden sm:inline">{{ __('Quote details') }}</span>
+                        </button>
+                        <button type="button" data-tab-button="crew" aria-selected="false" class="tab-button inline-flex shrink-0 items-center gap-2 rounded-t-md px-3 py-2.5 font-medium transition-colors sm:px-4">
+                            <flux:icon.user-group class="size-4 opacity-70" />
+                            <span class="sm:hidden">{{ __('Crew') }}</span>
+                            <span class="hidden sm:inline">{{ __('Crew lines') }}</span>
+                        </button>
+                        <button type="button" data-tab-button="terms" aria-selected="false" class="tab-button inline-flex shrink-0 items-center gap-2 rounded-t-md px-3 py-2.5 font-medium transition-colors sm:px-4">
+                            <flux:icon.document-duplicate class="size-4 opacity-70" />
+                            <span>{{ __('Terms') }}</span>
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Tab: Quote Details --}}
                 <fieldset data-tab-content="details" class="tab-content p-6 space-y-6" @disabled($isLocked)>
                     {{-- Document Info --}}
                     <div>
-                        <h3 class="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-4">Document Info</h3>
+                        <flux:heading size="sm" class="mb-4">{{ __('Document details') }}</flux:heading>
                         <div class="grid gap-4 md:grid-cols-2">
                             <flux:input name="doc_no" label="Document No." :value="old('doc_no', $quote->doc_no)" required />
                             <flux:select name="type" label="Agreement Type" required>
@@ -65,10 +87,10 @@
 
                     {{-- Client Info --}}
                     <div>
-                        <h3 class="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-4">Client Info</h3>
+                        <flux:heading size="sm" class="mb-4">{{ __('Client & contract') }}</flux:heading>
                         <div class="grid gap-4 md:grid-cols-2">
-                            <flux:select name="client_name" label="Client Name" required id="client-name-select">
-                                <option value="">Select client</option>
+                            <flux:select name="client_name" label="{{ __('Client name') }}" required id="client-name-select">
+                                <option value="">{{ __('Select client') }}</option>
                                 @foreach ($clients as $clientOption)
                                     <option value="{{ $clientOption->name }}" data-client-id="{{ $clientOption->id }}" @selected(old('client_name', $quote->client_name) === $clientOption->name)>
                                         {{ $clientOption->name }}
@@ -88,29 +110,36 @@
                 </fieldset>
 
                 {{-- Tab: Crew Lines --}}
-                <fieldset data-tab-content="crew" class="tab-content hidden p-6 space-y-3" @disabled($isLocked)>
-                    <div class="flex items-center justify-between">
-                        <p class="text-sm text-zinc-500">Add all crew positions included in this quote.</p>
-                        <flux:button type="button" variant="filled" icon="plus" size="sm" id="add-crew-line">Add Row</flux:button>
+                <fieldset data-tab-content="crew" class="tab-content hidden space-y-4 p-6" @disabled($isLocked)>
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div class="min-w-0 space-y-1">
+                            <flux:heading size="sm">{{ __('Crew lines') }}</flux:heading>
+                            <flux:text class="text-zinc-500">{{ __('Add each position billed on this quote. Scroll horizontally if your screen is narrow.') }}</flux:text>
+                        </div>
+                        <flux:button type="button" variant="primary" icon="plus" size="sm" id="add-crew-line" class="shrink-0">{{ __('Add row') }}</flux:button>
                     </div>
+
+                    <flux:callout icon="calculator" color="blue" inline>
+                        {{ __('Day: qty × daily rate × days. Month: qty × monthly rate × months. Fixed: use Manual total (rate column is unused for that row). Totals update when you save.') }}
+                    </flux:callout>
 
                     <div class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
                         <table class="min-w-full text-sm" id="crew-lines-table">
-                            <thead class="bg-zinc-50 dark:bg-zinc-800">
+                            <thead class="sticky top-0 z-10 bg-zinc-50 shadow-sm dark:bg-zinc-800/95">
                                 <tr class="text-left text-xs uppercase tracking-wide text-zinc-500">
-                                    <th class="px-3 py-2.5">Rank</th>
-                                    <th class="px-3 py-2.5">Category</th>
-                                    <th class="px-3 py-2.5">Qty</th>
-                                    <th class="px-3 py-2.5">Basis</th>
-                                    <th class="px-3 py-2.5">Rate</th>
-                                    <th class="px-3 py-2.5">Monthly Rate</th>
-                                    <th class="px-3 py-2.5">Duration (Days)</th>
-                                    <th class="px-3 py-2.5">Duration (Months)</th>
-                                    <th class="px-3 py-2.5">Manual Total</th>
-                                    <th class="px-3 py-2.5">OT Rate</th>
-                                    <th class="px-3 py-2.5">Mob Date</th>
-                                    <th class="px-3 py-2.5">Demob Date</th>
-                                    <th class="px-3 py-2.5">Remarks</th>
+                                    <th class="px-3 py-2.5">{{ __('Rank') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Category') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Qty') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Basis') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Rate') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Monthly') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Days') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Months') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Manual') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('OT') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Mob') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Demob') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Remarks') }}</th>
                                     <th class="px-3 py-2.5"></th>
                                 </tr>
                             </thead>
@@ -120,10 +149,14 @@
                                     $initialCrewLines = is_array($oldCrewLines) ? $oldCrewLines : ($crewLines ?: [['category' => 'Marine', 'qty' => 1, 'basis' => 'Day', 'rate' => 0, 'duration' => 0, 'ot_rate' => 0]]);
                                 @endphp
                                 @foreach ($initialCrewLines as $index => $line)
+                                    @php
+                                        $basisRaw = $line['basis'] ?? 'Day';
+                                        $basisValue = in_array($basisRaw, ['Day', 'Month', 'Fixed'], true) ? $basisRaw : 'Day';
+                                    @endphp
                                     <tr class="border-t border-zinc-200 dark:border-zinc-700">
                                         <td class="p-2">
                                             <select class="h-9 w-full min-w-[140px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][rank]" data-rank-select>
-                                                <option value="">Select rank</option>
+                                                <option value="">{{ __('Select rank') }}</option>
                                                 @foreach ($ranks as $rankOption)
                                                     <option
                                                         value="{{ $rankOption->name }}"
@@ -137,9 +170,15 @@
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="p-2"><input class="h-9 w-full min-w-[90px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][category]" value="{{ $line['category'] ?? 'Marine' }}" /></td>
+                                        <td class="p-2"><input class="h-9 w-full min-w-[90px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][category]" value="{{ $line['category'] ?? 'Marine' }}" autocomplete="off" /></td>
                                         <td class="p-2"><input class="h-9 w-16 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="1" name="crew_lines[{{ $index }}][qty]" value="{{ $line['qty'] ?? 1 }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][basis]" value="{{ $line['basis'] ?? 'Day' }}" /></td>
+                                        <td class="p-2">
+                                            <select class="h-9 w-26 shrink-0 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][basis]" data-basis-select>
+                                                @foreach (['Day', 'Month', 'Fixed'] as $basisOption)
+                                                    <option value="{{ $basisOption }}" @selected($basisValue === $basisOption)>{{ $basisOption }}</option>
+                                                @endforeach
+                                            </select>
+                                        </td>
                                         <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][rate]" value="{{ $line['rate'] ?? 0 }}" /></td>
                                         <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][monthly_rate]" value="{{ $line['monthly_rate'] ?? 0 }}" /></td>
                                         <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="0" name="crew_lines[{{ $index }}][duration_days]" value="{{ $line['duration_days'] ?? $line['duration'] ?? 0 }}" /></td>
@@ -148,11 +187,11 @@
                                         <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][ot_rate]" value="{{ $line['ot_rate'] ?? 0 }}" /></td>
                                         <td class="p-2"><input class="h-9 w-32 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="date" name="crew_lines[{{ $index }}][mob_date]" value="{{ $line['mob_date'] ?? '' }}" /></td>
                                         <td class="p-2"><input class="h-9 w-32 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="date" name="crew_lines[{{ $index }}][demob_date]" value="{{ $line['demob_date'] ?? '' }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-full min-w-[100px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][remarks]" value="{{ $line['remarks'] ?? '' }}" /></td>
+                                        <td class="p-2"><input class="h-9 w-full min-w-[100px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][remarks]" value="{{ $line['remarks'] ?? '' }}" autocomplete="off" /></td>
                                         <td class="p-2 text-right">
-                                            <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950" data-remove-line title="Remove row">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
-                                            </button>
+                                            <flux:tooltip content="{{ __('Remove row') }}">
+                                                <flux:button type="button" variant="ghost" icon="trash" size="sm" class="size-9!" data-remove-line />
+                                            </flux:tooltip>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -172,7 +211,7 @@
 
                     <flux:separator />
 
-                    <h3 class="text-sm font-semibold">Terms & Conditions</h3>
+                    <flux:heading size="sm">{{ __('Terms & conditions') }}</flux:heading>
                     <flux:textarea name="terms_conditions" label="General Terms & Conditions" rows="4">{{ old('terms_conditions', $quote->terms_conditions) }}</flux:textarea>
                     <flux:textarea name="special_conditions" label="Special Conditions" rows="3">{{ old('special_conditions', $quote->special_conditions) }}</flux:textarea>
                     <div class="grid gap-4 md:grid-cols-2">
@@ -185,23 +224,18 @@
                     </div>
                 </fieldset>
 
-                <div class="flex items-center justify-between border-t border-zinc-200 px-6 py-4 dark:border-zinc-700">
-                    <flux:button type="button" variant="ghost" icon="arrow-left" id="tab-prev-button">Back</flux:button>
-                    <p class="text-xs text-zinc-500" id="tab-step-indicator"></p>
-                    <flux:button type="button" variant="filled" icon-trailing="arrow-right" id="tab-next-button">Next</flux:button>
+                <div class="flex items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/70 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900/50 sm:px-6">
+                    <flux:button type="button" variant="ghost" icon="arrow-left" id="tab-prev-button">{{ __('Back') }}</flux:button>
+                    <p class="text-center text-xs tabular-nums text-zinc-500" id="tab-step-indicator"></p>
+                    <flux:button type="button" variant="primary" icon-trailing="arrow-right" id="tab-next-button">{{ __('Next') }}</flux:button>
                 </div>
             </div>
 
             {{-- Sticky Action Bar --}}
-            <div class="sticky bottom-0 z-10 flex items-center justify-between rounded-b-xl border border-t-0 border-zinc-200 bg-white/95 px-6 py-4 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
-                <div>
-                    <flux:button variant="ghost" icon="arrow-left" :href="route('quotes.index')" wire:navigate>Back to list</flux:button>
-                </div>
-                <div class="flex items-center">
-                    <flux:button variant="primary" type="submit" icon="check" :disabled="$isLocked">
-                        {{ $isEdit ? 'Update Quote' : 'Save Quote' }}
-                    </flux:button>
-                </div>
+            <div class="sticky bottom-0 z-10 mt-px flex justify-end rounded-b-xl border border-t-0 border-zinc-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6 dark:border-zinc-700 dark:bg-zinc-900/95">
+                <flux:button variant="primary" type="submit" icon="check" :disabled="$isLocked">
+                    {{ $isEdit ? __('Update quote') : __('Save quote') }}
+                </flux:button>
             </div>
         </form>
     </div>
@@ -222,6 +256,7 @@
                 activeTab = tab;
                 tabButtons.forEach((button) => {
                     const isActive = button.dataset.tabButton === tab;
+                    button.setAttribute('aria-selected', isActive ? 'true' : 'false');
                     button.classList.toggle('border-b-2', isActive);
                     button.classList.toggle('border-zinc-900', isActive);
                     button.classList.toggle('dark:border-white', isActive);
@@ -267,6 +302,8 @@
             const addButton = document.getElementById('add-crew-line');
 
             const inputClass = 'h-9 w-full rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100';
+            const selectRankPlaceholder = @json(__('Select rank'));
+            const removeRowLabel = @json(__('Remove row'));
             const trashIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="size-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>`;
             const rankOptions = @json($ranks->values()->all());
 
@@ -287,7 +324,16 @@
                     return `<option value="${rank.name}" data-category="${rank.category}" data-basis="${rank.default_basis}" data-rate="${rank.default_rate}" ${isSelected}>${rank.name}</option>`;
                 }).join('');
 
-                return `<select class="h-9 w-full min-w-[140px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[${index}][rank]" data-rank-select><option value="">Select rank</option>${options}</select>`;
+                return `<select class="h-9 w-full min-w-[140px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[${index}][rank]" data-rank-select><option value="">${selectRankPlaceholder}</option>${options}</select>`;
+            }
+
+            function buildBasisSelect(index, selected = 'Day') {
+                const normalized = ['Day', 'Month', 'Fixed'].includes(selected) ? selected : 'Day';
+                const options = ['Day', 'Month', 'Fixed'].map((b) =>
+                    `<option value="${b}" ${b === normalized ? 'selected' : ''}>${b}</option>`
+                ).join('');
+
+                return `<select class="h-9 w-26 shrink-0 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[${index}][basis]" data-basis-select>${options}</select>`;
             }
 
             function createCrewLineRow(index) {
@@ -297,7 +343,7 @@
                     <td class="p-2">${buildRankSelect(index)}</td>
                     <td class="p-2"><input class="${inputClass} min-w-[90px]" name="crew_lines[${index}][category]" value="Marine" /></td>
                     <td class="p-2"><input class="${inputClass} w-16" type="number" min="1" name="crew_lines[${index}][qty]" value="1" /></td>
-                    <td class="p-2"><input class="${inputClass} w-20" name="crew_lines[${index}][basis]" value="Day" /></td>
+                    <td class="p-2">${buildBasisSelect(index)}</td>
                     <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][rate]" value="0" /></td>
                     <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][monthly_rate]" value="0" /></td>
                     <td class="p-2"><input class="${inputClass} w-20" type="number" min="0" name="crew_lines[${index}][duration_days]" value="0" /></td>
@@ -308,7 +354,7 @@
                     <td class="p-2"><input class="${inputClass} w-32" type="date" name="crew_lines[${index}][demob_date]" /></td>
                     <td class="p-2"><input class="${inputClass} min-w-[100px]" name="crew_lines[${index}][remarks]" /></td>
                     <td class="p-2 text-right">
-                        <button type="button" class="inline-flex items-center justify-center rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950" data-remove-line title="Remove row">
+                        <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/60 dark:hover:text-red-400" data-remove-line aria-label="${removeRowLabel}">
                             ${trashIcon}
                         </button>
                     </td>
@@ -348,15 +394,18 @@
                 }
 
                 const categoryInput = row.querySelector('[name*="[category]"]');
-                const basisInput = row.querySelector('[name*="[basis]"]');
+                const basisSelect = row.querySelector('[data-basis-select]');
                 const rateInput = row.querySelector('[name*="[rate]"]');
 
                 if (categoryInput instanceof HTMLInputElement && selectedOption.dataset.category) {
                     categoryInput.value = selectedOption.dataset.category;
                 }
 
-                if (basisInput instanceof HTMLInputElement && selectedOption.dataset.basis) {
-                    basisInput.value = selectedOption.dataset.basis;
+                if (basisSelect instanceof HTMLSelectElement && selectedOption.dataset.basis) {
+                    const b = selectedOption.dataset.basis;
+                    if (['Day', 'Month', 'Fixed'].includes(b)) {
+                        basisSelect.value = b;
+                    }
                 }
 
                 if (rateInput instanceof HTMLInputElement && selectedOption.dataset.rate) {
