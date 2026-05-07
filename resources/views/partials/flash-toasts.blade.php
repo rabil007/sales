@@ -11,20 +11,50 @@
     <script>
         (() => {
             const toasts = @json($flashToasts);
+            let hasShown = false;
 
-            const showToast = (toast) => {
+            const showToasts = () => {
+                if (hasShown) {
+                    return true;
+                }
+
                 const api = window.Flux ?? window.$flux;
 
                 if (api && typeof api.toast === 'function') {
-                    api.toast(toast);
+                    toasts.forEach((toast) => api.toast(toast));
+                    hasShown = true;
+                    return true;
                 }
+
+                return false;
+            };
+
+            const waitAndShowToasts = () => {
+                let attempts = 0;
+                const maxAttempts = 40;
+
+                const tryShow = () => {
+                    if (showToasts()) {
+                        return;
+                    }
+
+                    attempts += 1;
+
+                    if (attempts < maxAttempts) {
+                        setTimeout(tryShow, 50);
+                    }
+                };
+
+                tryShow();
             };
 
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', () => toasts.forEach(showToast), { once: true });
+                document.addEventListener('DOMContentLoaded', waitAndShowToasts, { once: true });
             } else {
-                toasts.forEach(showToast);
+                waitAndShowToasts();
             }
+
+            document.addEventListener('livewire:navigated', waitAndShowToasts);
         })();
     </script>
 @endif
