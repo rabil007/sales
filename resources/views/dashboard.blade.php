@@ -3,7 +3,6 @@
         {{-- Metric Cards --}}
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
-                <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-blue-500 to-cyan-400 opacity-80"></div>
                 <div class="flex items-start gap-4">
                     <div class="rounded-xl bg-blue-50 p-2.5 ring-1 ring-blue-100 dark:bg-blue-950 dark:ring-blue-900/50">
                     <flux:icon.document-text class="size-5 text-blue-600 dark:text-blue-400" />
@@ -15,7 +14,6 @@
                 </div>
             </div>
             <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
-                <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-emerald-500 to-lime-400 opacity-80"></div>
                 <div class="flex items-start gap-4">
                     <div class="rounded-xl bg-emerald-50 p-2.5 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:ring-emerald-900/50">
                     <flux:icon.check-circle class="size-5 text-emerald-600 dark:text-emerald-400" />
@@ -27,7 +25,6 @@
                 </div>
             </div>
             <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
-                <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-amber-500 to-orange-400 opacity-80"></div>
                 <div class="flex items-start gap-4">
                     <div class="rounded-xl bg-amber-50 p-2.5 ring-1 ring-amber-100 dark:bg-amber-950 dark:ring-amber-900/50">
                     <flux:icon.clock class="size-5 text-amber-600 dark:text-amber-400" />
@@ -39,7 +36,6 @@
                 </div>
             </div>
             <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
-                <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-violet-500 to-fuchsia-400 opacity-80"></div>
                 <div class="flex items-start gap-4">
                     <div class="rounded-xl bg-violet-50 p-2.5 ring-1 ring-violet-100 dark:bg-violet-950 dark:ring-violet-900/50">
                     <flux:icon.currency-dollar class="size-5 text-violet-600 dark:text-violet-400" />
