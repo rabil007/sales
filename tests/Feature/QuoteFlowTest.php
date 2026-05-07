@@ -49,7 +49,7 @@ test('user can create a quote with crew lines', function () {
 
     $quote = Quote::query()->firstOrFail();
 
-    $response->assertRedirect(route('quotes.edit', $quote, absolute: false));
+    $response->assertRedirect(route('quotes.index', absolute: false));
 
     expect((float) $quote->total_amount)->toBe(2000.0)
         ->and($quote->crewLines()->count())->toBe(1);
@@ -95,7 +95,7 @@ test('user can update quote and filter list', function () {
         ],
     ]);
 
-    $response->assertRedirect(route('quotes.edit', $quote, absolute: false));
+    $response->assertRedirect(route('quotes.index', absolute: false));
 
     $quote->refresh();
     expect($quote->status)->toBe('Sent')
@@ -144,7 +144,7 @@ test('locked quote cannot be updated', function () {
         'currency' => 'AED',
         'client_id' => $client->id,
         'client_name' => $client->name,
-    ])->assertRedirect(route('quotes.edit', $quote, absolute: false));
+    ])->assertRedirect(route('quotes.index', absolute: false));
 
     expect($quote->refresh()->status)->toBe('Approved');
 });

@@ -1,9 +1,5 @@
 <x-layouts::app :title="$isEdit ? __('Edit Quote') : __('New Quote')">
     <div class="space-y-4">
-        @if (session('status'))
-            <flux:callout icon="check-circle" color="emerald">{{ session('status') }}</flux:callout>
-        @endif
-
         @if ($errors->any())
             <flux:callout icon="exclamation-triangle" color="red">
                 Please review the form fields and try again.
@@ -210,32 +206,13 @@
                 <div>
                     <flux:button variant="ghost" icon="arrow-left" :href="route('quotes.index')" wire:navigate>Back to list</flux:button>
                 </div>
-                <div class="flex items-center gap-3">
-                    @if ($isEdit)
-                        <flux:button
-                            variant="danger"
-                            icon="trash"
-                            type="button"
-                            :disabled="$isLocked"
-                            x-data
-                            x-on:click="if (confirm('Delete this quote? This action cannot be undone.')) document.getElementById('delete-quote-form').submit()"
-                        >
-                            Delete
-                        </flux:button>
-                    @endif
+                <div class="flex items-center">
                     <flux:button variant="primary" type="submit" icon="check" :disabled="$isLocked">
                         {{ $isEdit ? 'Update Quote' : 'Save Quote' }}
                     </flux:button>
                 </div>
             </div>
         </form>
-
-        @if ($isEdit)
-            <form id="delete-quote-form" method="POST" action="{{ route('quotes.destroy', $quote) }}">
-                @csrf
-                @method('DELETE')
-            </form>
-        @endif
     </div>
 
     <script>

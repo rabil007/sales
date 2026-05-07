@@ -19,7 +19,7 @@ test('authenticated user can manage ranks', function () {
 
     $rank = Rank::query()->firstOrFail();
 
-    $response->assertRedirect(route('ranks.edit', $rank, absolute: false));
+    $response->assertRedirect(route('ranks.index', absolute: false));
 
     $this->put(route('ranks.update', $rank), [
         'name' => 'Chief Officer',
@@ -27,7 +27,7 @@ test('authenticated user can manage ranks', function () {
         'default_basis' => 'Month',
         'default_rate' => 18000.00,
         'is_active' => false,
-    ])->assertRedirect(route('ranks.edit', $rank, absolute: false));
+    ])->assertRedirect(route('ranks.index', absolute: false));
 
     $rank->refresh();
     expect($rank->category)->toBe('Offshore')

@@ -1,9 +1,5 @@
 <x-layouts::app :title="__('Quotes & Agreements')">
     <div class="space-y-4">
-        @if (session('status'))
-            <flux:callout icon="check-circle" color="emerald">{{ session('status') }}</flux:callout>
-        @endif
-
         {{-- Page Header --}}
         <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -81,14 +77,47 @@
                                     <flux:badge :color="$color" size="sm">{{ $quote->status }}</flux:badge>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <div class="flex items-center justify-end gap-1" onclick="event.stopPropagation()">
+                                    <div class="flex items-center justify-end gap-1.5" onclick="event.stopPropagation()">
                                         <flux:tooltip content="Edit">
-                                            <flux:button size="sm" icon="pencil" variant="ghost" :href="route('quotes.edit', $quote)" wire:navigate />
+                                            <flux:button size="sm" icon="pencil" variant="ghost" :href="route('quotes.edit', $quote)" wire:navigate class="size-8! p-0!" />
                                         </flux:tooltip>
                                         <flux:tooltip content="Preview">
-                                            <flux:button size="sm" icon="eye" variant="ghost" :href="route('quotes.show', $quote)" wire:navigate />
+                                            <flux:button size="sm" icon="eye" variant="ghost" :href="route('quotes.show', $quote)" wire:navigate class="size-8! p-0!" />
+                                        </flux:tooltip>
+                                        <flux:tooltip content="Delete">
+                                            <flux:modal.trigger :name="'delete-quote-'.$quote->id">
+                                                <flux:button
+                                                    size="sm"
+                                                    icon="trash"
+                                                    variant="ghost"
+                                                    class="size-8! p-0! text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/40"
+                                                />
+                                            </flux:modal.trigger>
                                         </flux:tooltip>
                                     </div>
+
+                                    <flux:modal :name="'delete-quote-'.$quote->id" class="max-w-md">
+                                        <div class="space-y-6">
+                                            <div>
+                                                <flux:heading size="lg">Delete quote?</flux:heading>
+                                                <flux:subheading>
+                                                    This action cannot be undone. Quote <span class="font-semibold">{{ $quote->doc_no }}</span> will be permanently deleted.
+                                                </flux:subheading>
+                                            </div>
+
+                                            <div class="flex justify-end gap-2">
+                                                <flux:modal.close>
+                                                    <flux:button variant="filled">Cancel</flux:button>
+                                                </flux:modal.close>
+
+                                                <form method="POST" action="{{ route('quotes.destroy', $quote) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <flux:button variant="danger" type="submit">Delete</flux:button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </flux:modal>
                                 </td>
                             </tr>
                         @empty

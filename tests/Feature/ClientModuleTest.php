@@ -18,14 +18,14 @@ test('authenticated user can manage clients', function () {
 
     $client = Client::query()->firstOrFail();
 
-    $response->assertRedirect(route('clients.edit', $client, absolute: false));
+    $response->assertRedirect(route('clients.index', absolute: false));
 
     $this->put(route('clients.update', $client), [
         'name' => 'ADNOC Offshore Updated',
         'email' => 'ops.updated@adnoc.test',
         'phone' => '+971502222222',
         'company' => 'ADNOC',
-    ])->assertRedirect(route('clients.edit', $client, absolute: false));
+    ])->assertRedirect(route('clients.index', absolute: false));
 
     $client->refresh();
     expect($client->name)->toBe('ADNOC Offshore Updated');

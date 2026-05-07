@@ -1,9 +1,5 @@
 <x-layouts::app :title="__('Ranks')">
     <div class="space-y-6">
-        @if (session('status'))
-            <flux:callout icon="check-circle" color="emerald">{{ session('status') }}</flux:callout>
-        @endif
-
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
                 <flux:heading size="lg">Ranks</flux:heading>
@@ -93,7 +89,44 @@
                                     </form>
                                 </td>
                                 <td class="px-4 py-3 text-right">
-                                    <flux:button size="sm" icon="pencil" variant="ghost" :href="route('ranks.edit', $rank)" wire:navigate>Edit</flux:button>
+                                    <div class="flex items-center justify-end gap-1.5">
+                                        <flux:tooltip content="Edit">
+                                            <flux:button size="sm" icon="pencil" variant="ghost" :href="route('ranks.edit', $rank)" wire:navigate class="size-8! p-0!" />
+                                        </flux:tooltip>
+                                        <flux:tooltip content="Delete">
+                                            <flux:modal.trigger :name="'delete-rank-'.$rank->id">
+                                                <flux:button
+                                                    size="sm"
+                                                    icon="trash"
+                                                    variant="ghost"
+                                                    class="size-8! p-0! text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/40"
+                                                />
+                                            </flux:modal.trigger>
+                                        </flux:tooltip>
+                                    </div>
+
+                                    <flux:modal :name="'delete-rank-'.$rank->id" class="max-w-md">
+                                        <div class="space-y-6">
+                                            <div>
+                                                <flux:heading size="lg">Delete rank?</flux:heading>
+                                                <flux:subheading>
+                                                    This action cannot be undone. Rank <span class="font-semibold">{{ $rank->name }}</span> will be permanently deleted.
+                                                </flux:subheading>
+                                            </div>
+
+                                            <div class="flex justify-end gap-2">
+                                                <flux:modal.close>
+                                                    <flux:button variant="filled">Cancel</flux:button>
+                                                </flux:modal.close>
+
+                                                <form method="POST" action="{{ route('ranks.destroy', $rank) }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <flux:button variant="danger" type="submit">Delete</flux:button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </flux:modal>
                                 </td>
                             </tr>
                         @empty

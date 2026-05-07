@@ -72,12 +72,12 @@ class RankController extends Controller
      */
     public function store(RankRequest $request): RedirectResponse
     {
-        $rank = Rank::query()->create([
+        Rank::query()->create([
             ...$request->validated(),
             'is_active' => (bool) $request->boolean('is_active', true),
         ]);
 
-        return redirect()->route('ranks.edit', $rank)->with('status', 'Rank created.');
+        return redirect()->route('ranks.index')->with('status', 'Rank created.');
     }
 
     /**
@@ -101,7 +101,7 @@ class RankController extends Controller
             'is_active' => (bool) $request->boolean('is_active', false),
         ]);
 
-        return redirect()->route('ranks.edit', $rank)->with('status', 'Rank updated.');
+        return redirect()->route('ranks.index')->with('status', 'Rank updated.');
     }
 
     /**

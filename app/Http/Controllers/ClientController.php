@@ -84,9 +84,9 @@ class ClientController extends Controller
      */
     public function store(ClientRequest $request): RedirectResponse
     {
-        $client = Client::query()->create($request->validated());
+        Client::query()->create($request->validated());
 
-        return redirect()->route('clients.edit', $client)->with('status', 'Client created.');
+        return redirect()->route('clients.index')->with('status', 'Client created.');
     }
 
     /**
@@ -107,7 +107,7 @@ class ClientController extends Controller
     {
         $client->update($request->validated());
 
-        return redirect()->route('clients.edit', $client)->with('status', 'Client updated.');
+        return redirect()->route('clients.index')->with('status', 'Client updated.');
     }
 
     /**

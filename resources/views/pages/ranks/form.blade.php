@@ -1,9 +1,5 @@
 <x-layouts::app :title="$isEdit ? __('Edit Rank') : __('New Rank')">
     <div class="mx-auto max-w-4xl space-y-6">
-        @if (session('status'))
-            <flux:callout icon="check-circle" color="emerald">{{ session('status') }}</flux:callout>
-        @endif
-
         @if ($errors->any())
             <flux:callout icon="exclamation-triangle" color="red">Please review rank details and try again.</flux:callout>
         @endif
@@ -46,31 +42,11 @@
 
             <flux:separator />
 
-            <div class="flex items-center justify-between">
-                @if ($isEdit)
-                    <flux:button
-                        variant="danger"
-                        type="button"
-                        icon="trash"
-                        x-data
-                        x-on:click="if (confirm('Delete this rank? This action cannot be undone.')) document.getElementById('delete-rank-form').submit()"
-                    >
-                        Delete
-                    </flux:button>
-                @else
-                    <div></div>
-                @endif
+            <div class="flex justify-end">
                 <flux:button variant="primary" type="submit" icon="check">
                     {{ $isEdit ? 'Update Rank' : 'Save Rank' }}
                 </flux:button>
             </div>
         </form>
-
-        @if ($isEdit)
-            <form id="delete-rank-form" method="POST" action="{{ route('ranks.destroy', $rank) }}">
-                @csrf
-                @method('DELETE')
-            </form>
-        @endif
     </div>
 </x-layouts::app>

@@ -85,7 +85,7 @@ class QuoteController extends Controller
      */
     public function store(QuoteRequest $request): RedirectResponse
     {
-        $quote = DB::transaction(function () use ($request): Quote {
+        DB::transaction(function () use ($request): Quote {
             $validated = $request->validated();
             $crewLines = $this->normalizeCrewLines($validated['crew_lines'] ?? []);
             $client = $this->resolveClient($validated);
@@ -102,7 +102,7 @@ class QuoteController extends Controller
             return $quote;
         });
 
-        return redirect()->route('quotes.edit', $quote)->with('status', 'Quote created.');
+        return redirect()->route('quotes.index')->with('status', 'Quote created.');
     }
 
     /**
@@ -139,7 +139,7 @@ class QuoteController extends Controller
     public function update(QuoteRequest $request, Quote $quote): RedirectResponse
     {
         if ($this->isLocked($quote)) {
-            return redirect()->route('quotes.edit', $quote)->with('status', 'Locked quotes cannot be edited.');
+            return redirect()->route('quotes.index')->with('status', 'Locked quotes cannot be edited.');
         }
 
         DB::transaction(function () use ($request, $quote): void {
@@ -158,7 +158,7 @@ class QuoteController extends Controller
             $quote->crewLines()->createMany($crewLines);
         });
 
-        return redirect()->route('quotes.edit', $quote)->with('status', 'Quote updated.');
+        return redirect()->route('quotes.index')->with('status', 'Quote updated.');
     }
 
     /**
@@ -344,7 +344,7 @@ class QuoteController extends Controller
             return $newQuote;
         });
 
-        return redirect()->route('quotes.edit', $newQuote)->with('status', 'Renewal quote generated.');
+        return redirect()->route('quotes.index')->with('status', 'Renewal quote generated.');
     }
 
     private function transitionTo(Quote $quote, string $status): RedirectResponse
