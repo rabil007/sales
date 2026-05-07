@@ -2,56 +2,68 @@
     <div class="space-y-6">
         {{-- Metric Cards --}}
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            <div class="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                <div class="rounded-lg bg-blue-50 p-2.5 dark:bg-blue-950">
+            <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
+                <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-blue-500 to-cyan-400 opacity-80"></div>
+                <div class="flex items-start gap-4">
+                    <div class="rounded-xl bg-blue-50 p-2.5 ring-1 ring-blue-100 dark:bg-blue-950 dark:ring-blue-900/50">
                     <flux:icon.document-text class="size-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                    <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Total Quotes</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Total Quotes</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums">{{ number_format($totalQuotes) }}</p>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                <div class="rounded-lg bg-emerald-50 p-2.5 dark:bg-emerald-950">
+            <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
+                <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-emerald-500 to-lime-400 opacity-80"></div>
+                <div class="flex items-start gap-4">
+                    <div class="rounded-xl bg-emerald-50 p-2.5 ring-1 ring-emerald-100 dark:bg-emerald-950 dark:ring-emerald-900/50">
                     <flux:icon.check-circle class="size-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                    <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Active Agreements</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Active Agreements</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums">{{ number_format($activeAgreements) }}</p>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                <div class="rounded-lg bg-amber-50 p-2.5 dark:bg-amber-950">
+            <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
+                <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-amber-500 to-orange-400 opacity-80"></div>
+                <div class="flex items-start gap-4">
+                    <div class="rounded-xl bg-amber-50 p-2.5 ring-1 ring-amber-100 dark:bg-amber-950 dark:ring-amber-900/50">
                     <flux:icon.clock class="size-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                    <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Pending Approval</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Pending Approval</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums">{{ number_format($pendingApproval) }}</p>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-start gap-4 rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-                <div class="rounded-lg bg-violet-50 p-2.5 dark:bg-violet-950">
+            <div class="group relative overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
+                <div class="pointer-events-none absolute inset-x-0 top-0 h-1 bg-linear-to-r from-violet-500 to-fuchsia-400 opacity-80"></div>
+                <div class="flex items-start gap-4">
+                    <div class="rounded-xl bg-violet-50 p-2.5 ring-1 ring-violet-100 dark:bg-violet-950 dark:ring-violet-900/50">
                     <flux:icon.currency-dollar class="size-5 text-violet-600 dark:text-violet-400" />
                 </div>
                 <div>
-                    <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Total Value</p>
+                        <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Total Value</p>
                     <p class="mt-1 text-2xl font-bold tabular-nums">AED {{ number_format((float) $totalValue, 2) }}</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="grid gap-4 xl:grid-cols-3">
-            <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
                 <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Average Quote Value</p>
                 <p class="mt-2 text-2xl font-bold tabular-nums">AED {{ number_format((float) $averageQuoteValue, 2) }}</p>
                 <p class="mt-1 text-xs text-zinc-500">Based on all quotes</p>
             </div>
-            <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
                 <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Expiring in 30 Days</p>
                 <p class="mt-2 text-2xl font-bold tabular-nums">{{ number_format($expiringSoon) }}</p>
                 <p class="mt-1 text-xs text-zinc-500">Requires commercial follow-up</p>
             </div>
-            <div class="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="rounded-2xl border border-zinc-200/70 bg-white/90 p-5 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
                 <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">Status Mix</p>
                 <div class="mt-3 flex flex-wrap gap-2">
                     <flux:badge color="zinc">Draft: {{ $draftCount }}</flux:badge>
@@ -63,7 +75,7 @@
         </div>
 
         <div class="grid gap-4 xl:grid-cols-2">
-            <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="rounded-2xl border border-zinc-200/70 bg-white/90 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
                 <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
                     <flux:heading size="sm">Top Clients by Quote Value</flux:heading>
                 </div>
@@ -93,7 +105,7 @@
                 </div>
             </div>
 
-            <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="rounded-2xl border border-zinc-200/70 bg-white/90 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
                 <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
                     <flux:heading size="sm">Monthly Quote Value (Last 6 Months)</flux:heading>
                 </div>
@@ -120,7 +132,7 @@
         </div>
 
         {{-- Recent Quotes Table --}}
-        <div class="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="rounded-2xl border border-zinc-200/70 bg-white/90 shadow-sm ring-1 ring-zinc-100/70 dark:border-zinc-700/70 dark:bg-zinc-900/80 dark:ring-zinc-800">
             <div class="flex items-center justify-between border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
                 <flux:heading size="sm">Recent Quotes & Agreements</flux:heading>
                 <flux:button size="sm" variant="filled" :href="route('quotes.index')" wire:navigate>View All</flux:button>

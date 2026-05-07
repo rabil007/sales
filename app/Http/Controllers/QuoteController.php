@@ -81,10 +81,18 @@ class QuoteController extends Controller
 
         $status = $request->string('status')->toString();
         $q = $request->string('q')->trim()->toString();
+        $perPage = (int) $request->integer('per_page', 15);
+        $perPage = in_array($perPage, [10, 15, 25, 50], true) ? $perPage : 15;
 
         return view('pages.quotes.index', [
             'status' => $status,
             'q' => $q,
+            'perPage' => $perPage,
+            'stats' => [
+                'total' => Quote::query()->count(),
+                'draft' => Quote::query()->where('status', 'Draft')->count(),
+                'active' => Quote::query()->where('status', 'Active')->count(),
+            ],
             'quotes' => Quote::query()
                 ->when($status !== '', fn ($query) => $query->where('status', $status))
                 ->when($q !== '', fn ($query) => $query->where(function ($query) use ($q): void {
@@ -93,7 +101,7 @@ class QuoteController extends Controller
                 }))
                 ->with('client:id,name')
                 ->latest('id')
-                ->paginate(15)
+                ->paginate($perPage)
                 ->withQueryString(),
         ]);
     }

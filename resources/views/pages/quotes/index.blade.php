@@ -1,7 +1,7 @@
 <x-layouts::app :title="__('Quotes & Agreements')">
-    <div class="space-y-4">
+    <div class="space-y-6">
         {{-- Page Header --}}
-        <div class="flex flex-wrap items-end justify-between gap-3">
+        <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
                 <flux:heading size="lg">All Quotes & Agreements</flux:heading>
                 <flux:text class="text-zinc-500">Manage proposals, rate contracts, and active agreements.</flux:text>
@@ -9,34 +9,53 @@
             <flux:button variant="primary" icon="plus" :href="route('quotes.create')" wire:navigate>New Quote</flux:button>
         </div>
 
-        {{-- Filters --}}
-        <form method="GET" class="flex flex-wrap items-end gap-3">
-            <div class="flex-1 min-w-[200px]">
-                <flux:input
-                    name="q"
-                    :value="request('q')"
-                    placeholder="Search by client, doc no…"
-                    icon="magnifying-glass"
-                    class="w-full"
-                />
+        <div class="grid gap-4 md:grid-cols-3">
+            <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+                <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Total Quotes</flux:text>
+                <flux:heading size="lg" class="mt-2">{{ number_format($stats['total']) }}</flux:heading>
             </div>
-            <flux:select name="status" class="w-48">
+            <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+                <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Draft</flux:text>
+                <flux:heading size="lg" class="mt-2">{{ number_format($stats['draft']) }}</flux:heading>
+            </div>
+            <div class="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+                <flux:text class="text-xs uppercase tracking-wide text-zinc-500">Active</flux:text>
+                <flux:heading size="lg" class="mt-2">{{ number_format($stats['active']) }}</flux:heading>
+            </div>
+        </div>
+
+        {{-- Filters --}}
+        <form method="GET" class="grid gap-3 rounded-xl border border-zinc-200 bg-white p-4 md:grid-cols-4 dark:border-zinc-700 dark:bg-zinc-900">
+            <flux:input
+                name="q"
+                :value="$q"
+                placeholder="Search by client, doc no..."
+                icon="magnifying-glass"
+            />
+            <flux:select name="status">
                 <option value="">All Status</option>
                 @foreach (['Draft', 'Sent', 'Approved', 'Active', 'Expired'] as $statusOption)
                     <option value="{{ $statusOption }}" @selected($status === $statusOption)>{{ $statusOption }}</option>
                 @endforeach
             </flux:select>
-            <flux:button type="submit" variant="filled" icon="funnel">Filter</flux:button>
-            @if(request('q') || request('status'))
-                <flux:button :href="route('quotes.index')" variant="ghost" wire:navigate>Clear</flux:button>
-            @endif
+            <flux:select name="per_page">
+                @foreach ([10, 15, 25, 50] as $size)
+                    <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} / page</option>
+                @endforeach
+            </flux:select>
+            <div class="flex items-center gap-2">
+                <flux:button type="submit" variant="filled" icon="funnel">Filter</flux:button>
+                @if($q !== '' || $status !== '' || $perPage !== 15)
+                    <flux:button :href="route('quotes.index')" variant="ghost" wire:navigate>Clear</flux:button>
+                @endif
+            </div>
         </form>
 
         {{-- Table --}}
-        <div class="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+        <div class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
             <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
-                    <thead class="bg-zinc-50 dark:bg-zinc-800">
+                    <thead class="bg-zinc-50 dark:bg-zinc-800/80">
                         <tr class="text-left text-xs uppercase tracking-wide text-zinc-500">
                             <th class="px-4 py-3">Doc No</th>
                             <th class="px-4 py-3">Client</th>
@@ -52,7 +71,7 @@
                         @forelse ($quotes as $quote)
                             <tr
                                 onclick="window.location='{{ route('quotes.show', $quote) }}'"
-                                class="cursor-pointer border-t border-zinc-200 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60"
+                                class="cursor-pointer border-t border-zinc-200 transition-colors hover:bg-zinc-50/80 dark:border-zinc-700 dark:hover:bg-zinc-800/40"
                             >
                                 <td class="px-4 py-3">
                                     <span class="font-mono text-xs font-semibold text-zinc-800 dark:text-zinc-200">
@@ -102,7 +121,7 @@
                             <tr>
                                 <td class="px-4 py-12 text-center text-zinc-500" colspan="8">
                                     <div class="flex flex-col items-center gap-2">
-                                        <flux:icon.document-text class="size-10 opacity-25" />
+                                        <flux:icon.document-text class="size-8 opacity-30" />
                                         <p class="font-medium text-zinc-600 dark:text-zinc-400">No quotes found.</p>
                                         <p class="text-xs text-zinc-400">Try a different filter or create a new quote.</p>
                                     </div>
@@ -139,8 +158,14 @@
             </flux:modal>
         @endforeach
 
-        <div class="text-sm text-zinc-500">
-            {{ $quotes->withQueryString()->links() }}
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white p-4 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900">
+            <p>
+                Showing {{ $quotes->firstItem() ?? 0 }}-{{ $quotes->lastItem() ?? 0 }} of {{ $quotes->total() }} quotes
+            </p>
+            <div class="flex flex-wrap items-center gap-3">
+                <span>Page {{ $quotes->currentPage() }} of {{ $quotes->lastPage() }}</span>
+                {{ $quotes->withQueryString()->links() }}
+            </div>
         </div>
     </div>
 </x-layouts::app>
