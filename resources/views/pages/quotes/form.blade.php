@@ -32,7 +32,6 @@
                     <button type="button" data-tab-button="details" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Quote Details</button>
                     <button type="button" data-tab-button="crew" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Crew Lines</button>
                     <button type="button" data-tab-button="terms" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Terms</button>
-                    <button type="button" data-tab-button="preview" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Preview / Print</button>
                 </div>
 
                 {{-- Tab: Quote Details --}}
@@ -186,16 +185,6 @@
                     </div>
                 </fieldset>
 
-                {{-- Tab: Preview --}}
-                <div data-tab-content="preview" class="tab-content hidden p-6 space-y-4">
-                    <div class="flex justify-end">
-                        @if ($isEdit)
-                            <flux:button variant="filled" :href="route('quotes.export', $quote)">Print / Export PDF</flux:button>
-                        @endif
-                    </div>
-                    <div id="preview-pane" class="rounded-lg border border-zinc-200 p-6 dark:border-zinc-700"></div>
-                </div>
-
                 <div class="flex items-center justify-between border-t border-zinc-200 px-6 py-4 dark:border-zinc-700">
                     <flux:button type="button" variant="ghost" icon="arrow-left" id="tab-prev-button">Back</flux:button>
                     <p class="text-xs text-zinc-500" id="tab-step-indicator"></p>
@@ -219,10 +208,9 @@
 
     <script>
         (() => {
-            const tabs = ['details', 'crew', 'terms', 'preview'];
+            const tabs = ['details', 'crew', 'terms'];
             const tabButtons = document.querySelectorAll('[data-tab-button]');
             const tabContents = document.querySelectorAll('[data-tab-content]');
-            const previewPane = document.getElementById('preview-pane');
             const tabPrevButton = document.getElementById('tab-prev-button');
             const tabNextButton = document.getElementById('tab-next-button');
             const tabStepIndicator = document.getElementById('tab-step-indicator');
@@ -246,10 +234,6 @@
                 tabContents.forEach((content) => {
                     content.classList.toggle('hidden', content.dataset.tabContent !== tab);
                 });
-
-                if (tab === 'preview') {
-                    renderPreview();
-                }
 
                 const currentIndex = tabs.indexOf(tab);
                 const isFirst = currentIndex === 0;
@@ -379,110 +363,6 @@
                     rateInput.value = selectedOption.dataset.rate;
                 }
             });
-
-            function renderPreview() {
-                const data = {
-                    docNo: document.querySelector('[name="doc_no"]')?.value ?? '',
-                    type: document.querySelector('[name="type"]')?.value ?? '',
-                    issueDate: document.querySelector('[name="issue_date"]')?.value ?? '',
-                    expiryDate: document.querySelector('[name="expiry_date"]')?.value ?? '',
-                    status: document.querySelector('[name="status"]')?.value ?? '',
-                    currency: document.querySelector('[name="currency"]')?.value ?? 'AED',
-                    clientName: document.querySelector('[name="client_name"]')?.value ?? '',
-                    clientPo: document.querySelector('[name="client_po"]')?.value ?? '',
-                    vessel: document.querySelector('[name="vessel"]')?.value ?? '',
-                    location: document.querySelector('[name="location"]')?.value ?? '',
-                    paymentTerms: document.querySelector('[name="payment_terms"]')?.value ?? '',
-                    scope: document.querySelector('[name="scope"]')?.value ?? '',
-                };
-
-                const rows = [...document.querySelectorAll('#crew-lines-body tr')].map((row, index) => {
-                    const get = (name) => row.querySelector(`[name*="[${name}]"]`)?.value ?? '';
-                    const qty = Number(get('qty') || 0);
-                    const rate = Number(get('rate') || 0);
-                    const durationDays = Number(get('duration_days') || get('duration') || 0);
-                    const durationMonths = Number(get('duration_months') || 0);
-                    const monthlyRate = Number(get('monthly_rate') || 0);
-                    const manualTotal = Number(get('manual_total') || 0);
-                    const basis = get('basis');
-                    const amount = basis === 'Month'
-                        ? qty * durationMonths * monthlyRate
-                        : (basis === 'Fixed' ? manualTotal : qty * rate * durationDays);
-
-                    return {
-                        index: index + 1,
-                        rank: get('rank'),
-                        category: get('category'),
-                        qty,
-                        basis,
-                        rate,
-                        duration: basis === 'Month' ? durationMonths : durationDays,
-                        amount,
-                    };
-                });
-
-                const total = rows.reduce((sum, row) => sum + row.amount, 0);
-                const fmt = (value) => Number(value || 0).toLocaleString('en-AE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-                previewPane.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="flex items-start justify-between">
-                            <div>
-                                <p class="text-lg font-semibold">Overseas Marine Services</p>
-                                <p class="text-sm text-zinc-500">${data.type || '-'}</p>
-                            </div>
-                            <div class="text-right text-sm">
-                                <p class="font-medium">${data.docNo || '-'}</p>
-                                <p class="text-zinc-500">Issued: ${data.issueDate || '-'}</p>
-                            </div>
-                        </div>
-                        <div class="grid gap-2 rounded-md bg-zinc-50 p-3 text-sm dark:bg-zinc-800">
-                            <p><span class="text-zinc-500">Client:</span> ${data.clientName || '-'}</p>
-                            <p><span class="text-zinc-500">Vessel / Project:</span> ${data.vessel || '-'}</p>
-                            <p><span class="text-zinc-500">Location:</span> ${data.location || '-'}</p>
-                            <p><span class="text-zinc-500">Status:</span> ${data.status || '-'}</p>
-                            <p><span class="text-zinc-500">Expiry:</span> ${data.expiryDate || '-'}</p>
-                            <p><span class="text-zinc-500">Payment Terms:</span> ${data.paymentTerms || '-'}</p>
-                        </div>
-                        <div>
-                            <p class="mb-1 text-sm font-medium">Scope of Services</p>
-                            <p class="text-sm text-zinc-600 dark:text-zinc-300">${data.scope || '-'}</p>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-sm">
-                                <thead class="bg-zinc-50 dark:bg-zinc-800">
-                                    <tr class="text-left text-xs uppercase text-zinc-500">
-                                        <th class="px-2 py-2">#</th><th class="px-2 py-2">Rank</th><th class="px-2 py-2">Category</th><th class="px-2 py-2">Qty</th><th class="px-2 py-2">Basis</th><th class="px-2 py-2">Rate</th><th class="px-2 py-2">Duration</th><th class="px-2 py-2">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${rows.length ? rows.map((row) => `
-                                        <tr class="border-t border-zinc-200 dark:border-zinc-700">
-                                            <td class="px-2 py-2">${row.index}</td>
-                                            <td class="px-2 py-2">${row.rank || '-'}</td>
-                                            <td class="px-2 py-2">${row.category || '-'}</td>
-                                            <td class="px-2 py-2">${row.qty}</td>
-                                            <td class="px-2 py-2">${row.basis || '-'}</td>
-                                            <td class="px-2 py-2">${data.currency} ${fmt(row.rate)}</td>
-                                            <td class="px-2 py-2">${row.duration}</td>
-                                            <td class="px-2 py-2">${data.currency} ${fmt(row.amount)}</td>
-                                        </tr>
-                                    `).join('') : '<tr><td colspan="8" class="px-2 py-3 text-center text-zinc-500">No crew lines added.</td></tr>'}
-                                </tbody>
-                                <tfoot>
-                                    <tr class="border-t border-zinc-200 dark:border-zinc-700">
-                                        <td colspan="7" class="px-2 py-2 text-right font-medium">Total</td>
-                                        <td class="px-2 py-2 font-semibold">${data.currency} ${fmt(total)}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                        <div class="text-xs text-zinc-500">
-                            <p><strong>Client PO:</strong> ${data.clientPo || '-'}</p>
-                        </div>
-                    </div>
-                `;
-            }
         })();
     </script>
 </x-layouts::app>
