@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Client;
 use App\Models\Quote;
 use App\Models\User;
 
@@ -13,6 +14,7 @@ test('authenticated user can view quote pages', function () {
 
 test('user can create a quote with crew lines', function () {
     $this->actingAs(User::factory()->create());
+    $client = Client::factory()->create(['name' => 'Acme Marine']);
 
     $response = $this->post(route('quotes.store'), [
         'doc_no' => 'OMS-Q-2026-111',
@@ -20,7 +22,7 @@ test('user can create a quote with crew lines', function () {
         'issue_date' => now()->toDateString(),
         'status' => 'Draft',
         'currency' => 'AED',
-        'client_name' => 'Acme Marine',
+        'client_name' => $client->name,
         'crew_lines' => [
             [
                 'rank' => 'Master',

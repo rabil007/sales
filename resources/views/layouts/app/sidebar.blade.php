@@ -18,6 +18,9 @@
                     <flux:sidebar.item icon="document-text" :href="route('quotes.index')" :current="request()->routeIs('quotes.*')" wire:navigate>
                         {{ __('Quotes & Agreements') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="building-office-2" :href="route('clients.index')" :current="request()->routeIs('clients.*')" wire:navigate>
+                        {{ __('Clients') }}
+                    </flux:sidebar.item>
 
                 </flux:sidebar.group>
             </flux:sidebar.nav>

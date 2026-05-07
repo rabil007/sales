@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Client;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,6 +20,22 @@ class DatabaseSeeder extends Seeder
         ], [
             'name' => 'Sales Admin',
             'password' => Hash::make('password'),
+        ]);
+
+        Client::query()->updateOrCreate([
+            'name' => 'ADNOC Offshore',
+        ], [
+            'email' => 'procurement@adnoc.test',
+            'phone' => '+971500000001',
+            'company' => 'ADNOC',
+        ]);
+
+        Client::query()->updateOrCreate([
+            'name' => 'DP World',
+        ], [
+            'email' => 'contracts@dpworld.test',
+            'phone' => '+971500000002',
+            'company' => 'DP World',
         ]);
     }
 }

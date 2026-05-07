@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\QuoteRequest;
+use App\Models\Client;
 use App\Models\Quote;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -63,6 +64,7 @@ class QuoteController extends Controller
                 'payment_terms' => '30 days from invoice',
             ]),
             'crewLines' => [],
+            'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
             'isEdit' => false,
         ]);
     }
@@ -111,6 +113,7 @@ class QuoteController extends Controller
         return view('pages.quotes.form', [
             'quote' => $quote,
             'crewLines' => $quote->crewLines->toArray(),
+            'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
             'isEdit' => true,
         ]);
     }

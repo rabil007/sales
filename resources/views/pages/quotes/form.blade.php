@@ -28,6 +28,7 @@
                     <button type="button" data-tab-button="details" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Quote Details</button>
                     <button type="button" data-tab-button="crew" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Crew Lines</button>
                     <button type="button" data-tab-button="terms" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Terms</button>
+                    <button type="button" data-tab-button="preview" class="tab-button rounded-t-md px-4 py-2.5 font-medium transition-colors">Preview / Print</button>
                 </div>
 
                 {{-- Tab: Quote Details --}}
@@ -63,7 +64,14 @@
                     <div>
                         <h3 class="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 mb-4">Client Info</h3>
                         <div class="grid gap-4 md:grid-cols-2">
-                            <flux:input name="client_name" label="Client Name" :value="old('client_name', $quote->client_name)" required />
+                            <flux:select name="client_name" label="Client Name" required>
+                                <option value="">Select client</option>
+                                @foreach ($clients as $clientOption)
+                                    <option value="{{ $clientOption->name }}" @selected(old('client_name', $quote->client_name) === $clientOption->name)>
+                                        {{ $clientOption->name }}
+                                    </option>
+                                @endforeach
+                            </flux:select>
                             <flux:input name="client_po" label="Client PO Reference" :value="old('client_po', $quote->client_po)" />
                             <flux:input name="vessel" label="Vessel / Project" :value="old('vessel', $quote->vessel)" />
                             <flux:input name="location" label="Location / Field" :value="old('location', $quote->location)" />
@@ -132,15 +140,39 @@
                         @endforeach
                     </flux:select>
                     <flux:textarea name="scope" label="Scope of Services" rows="6">{{ old('scope', $quote->scope) }}</flux:textarea>
+
+                    <flux:separator />
+
+                    <h3 class="text-sm font-semibold">Terms & Conditions</h3>
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <flux:textarea name="terms[mobilization_replacement]" label="Mobilization / Replacement" rows="4">{{ old('terms.mobilization_replacement', 'OMS will provide qualified replacements within 48 hours of notification. Mobilization costs are for the client account unless otherwise agreed.') }}</flux:textarea>
+                        <flux:textarea name="terms[invoicing_payment]" label="Invoicing & Payment" rows="4">{{ old('terms.invoicing_payment', 'Invoices will be raised monthly based on approved timesheets. Payment is due within the agreed payment terms from invoice date.') }}</flux:textarea>
+                        <flux:textarea name="terms[accommodation_transport]" label="Accommodation / Transport" rows="4">{{ old('terms.accommodation_transport', 'Accommodation, meals, and transport from port to vessel/site are for the client account unless otherwise stated in this agreement.') }}</flux:textarea>
+                        <flux:textarea name="terms[medical_certification]" label="Medical / Certification" rows="4">{{ old('terms.medical_certification', 'All crew will hold valid STCW, MLC, and role-specific certifications. Medical fitness will comply with ENG1 or equivalent standards.') }}</flux:textarea>
+                        <flux:textarea name="terms[termination]" label="Termination" rows="4">{{ old('terms.termination', 'Either party may terminate this agreement with 30 days written notice. Immediate termination applies in cases of gross misconduct or safety breach.') }}</flux:textarea>
+                        <flux:textarea name="terms[governing_law]" label="Governing Law" rows="4">{{ old('terms.governing_law', 'This agreement shall be governed by the laws of the United Arab Emirates. Disputes shall be resolved through arbitration in Abu Dhabi, UAE.') }}</flux:textarea>
+                    </div>
+                </div>
+
+                {{-- Tab: Preview --}}
+                <div data-tab-content="preview" class="tab-content hidden p-6 space-y-4">
+                    <div class="flex justify-end">
+                        <flux:button variant="filled" type="button" onclick="window.print()">Print / Export PDF</flux:button>
+                    </div>
+                    <div id="preview-pane" class="rounded-lg border border-zinc-200 p-6 dark:border-zinc-700"></div>
+                </div>
+
+                <div class="flex items-center justify-between border-t border-zinc-200 px-6 py-4 dark:border-zinc-700">
+                    <flux:button type="button" variant="ghost" icon="arrow-left" id="tab-prev-button">Back</flux:button>
+                    <p class="text-xs text-zinc-500" id="tab-step-indicator"></p>
+                    <flux:button type="button" variant="filled" icon-trailing="arrow-right" id="tab-next-button">Next</flux:button>
                 </div>
             </div>
 
             {{-- Sticky Action Bar --}}
             <div class="sticky bottom-0 z-10 flex items-center justify-between rounded-b-xl border border-t-0 border-zinc-200 bg-white/95 px-6 py-4 backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
                 <div>
-                    @if ($isEdit)
-                        <flux:button variant="ghost" icon="eye" :href="route('quotes.show', $quote)" wire:navigate>Preview / Print</flux:button>
-                    @endif
+                    <flux:button variant="ghost" icon="arrow-left" :href="route('quotes.index')" wire:navigate>Back to list</flux:button>
                 </div>
                 <div class="flex items-center gap-3">
                     @if ($isEdit)
@@ -171,11 +203,17 @@
 
     <script>
         (() => {
-            const tabs = ['details', 'crew', 'terms'];
+            const tabs = ['details', 'crew', 'terms', 'preview'];
             const tabButtons = document.querySelectorAll('[data-tab-button]');
             const tabContents = document.querySelectorAll('[data-tab-content]');
+            const previewPane = document.getElementById('preview-pane');
+            const tabPrevButton = document.getElementById('tab-prev-button');
+            const tabNextButton = document.getElementById('tab-next-button');
+            const tabStepIndicator = document.getElementById('tab-step-indicator');
+            let activeTab = tabs[0];
 
             function setActiveTab(tab) {
+                activeTab = tab;
                 tabButtons.forEach((button) => {
                     const isActive = button.dataset.tabButton === tab;
                     button.classList.toggle('border-b-2', isActive);
@@ -190,12 +228,38 @@
                 tabContents.forEach((content) => {
                     content.classList.toggle('hidden', content.dataset.tabContent !== tab);
                 });
+
+                if (tab === 'preview') {
+                    renderPreview();
+                }
+
+                const currentIndex = tabs.indexOf(tab);
+                const isFirst = currentIndex === 0;
+                const isLast = currentIndex === tabs.length - 1;
+
+                tabPrevButton.classList.toggle('invisible', isFirst);
+                tabNextButton.classList.toggle('invisible', isLast);
+                tabStepIndicator.textContent = `Step ${currentIndex + 1} of ${tabs.length}`;
             }
 
             tabButtons.forEach((button) => {
                 button.addEventListener('click', () => setActiveTab(button.dataset.tabButton));
             });
             setActiveTab(tabs[0]);
+
+            tabPrevButton.addEventListener('click', () => {
+                const currentIndex = tabs.indexOf(activeTab);
+                if (currentIndex > 0) {
+                    setActiveTab(tabs[currentIndex - 1]);
+                }
+            });
+
+            tabNextButton.addEventListener('click', () => {
+                const currentIndex = tabs.indexOf(activeTab);
+                if (currentIndex < tabs.length - 1) {
+                    setActiveTab(tabs[currentIndex + 1]);
+                }
+            });
 
             const body = document.getElementById('crew-lines-body');
             const addButton = document.getElementById('add-crew-line');
@@ -239,6 +303,104 @@
                     event.target.closest('tr')?.remove();
                 }
             });
+
+            function renderPreview() {
+                const data = {
+                    docNo: document.querySelector('[name="doc_no"]')?.value ?? '',
+                    type: document.querySelector('[name="type"]')?.value ?? '',
+                    issueDate: document.querySelector('[name="issue_date"]')?.value ?? '',
+                    expiryDate: document.querySelector('[name="expiry_date"]')?.value ?? '',
+                    status: document.querySelector('[name="status"]')?.value ?? '',
+                    currency: document.querySelector('[name="currency"]')?.value ?? 'AED',
+                    clientName: document.querySelector('[name="client_name"]')?.value ?? '',
+                    clientPo: document.querySelector('[name="client_po"]')?.value ?? '',
+                    vessel: document.querySelector('[name="vessel"]')?.value ?? '',
+                    location: document.querySelector('[name="location"]')?.value ?? '',
+                    paymentTerms: document.querySelector('[name="payment_terms"]')?.value ?? '',
+                    scope: document.querySelector('[name="scope"]')?.value ?? '',
+                };
+
+                const rows = [...document.querySelectorAll('#crew-lines-body tr')].map((row, index) => {
+                    const get = (name) => row.querySelector(`[name*="[${name}]"]`)?.value ?? '';
+                    const qty = Number(get('qty') || 0);
+                    const rate = Number(get('rate') || 0);
+                    const duration = Number(get('duration') || 0);
+                    const amount = qty * rate * duration;
+
+                    return {
+                        index: index + 1,
+                        rank: get('rank'),
+                        category: get('category'),
+                        qty,
+                        basis: get('basis'),
+                        rate,
+                        duration,
+                        amount,
+                    };
+                });
+
+                const total = rows.reduce((sum, row) => sum + row.amount, 0);
+                const fmt = (value) => Number(value || 0).toLocaleString('en-AE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                previewPane.innerHTML = `
+                    <div class="space-y-4">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <p class="text-lg font-semibold">Overseas Marine Services</p>
+                                <p class="text-sm text-zinc-500">${data.type || '-'}</p>
+                            </div>
+                            <div class="text-right text-sm">
+                                <p class="font-medium">${data.docNo || '-'}</p>
+                                <p class="text-zinc-500">Issued: ${data.issueDate || '-'}</p>
+                            </div>
+                        </div>
+                        <div class="grid gap-2 rounded-md bg-zinc-50 p-3 text-sm dark:bg-zinc-800">
+                            <p><span class="text-zinc-500">Client:</span> ${data.clientName || '-'}</p>
+                            <p><span class="text-zinc-500">Vessel / Project:</span> ${data.vessel || '-'}</p>
+                            <p><span class="text-zinc-500">Location:</span> ${data.location || '-'}</p>
+                            <p><span class="text-zinc-500">Status:</span> ${data.status || '-'}</p>
+                            <p><span class="text-zinc-500">Expiry:</span> ${data.expiryDate || '-'}</p>
+                            <p><span class="text-zinc-500">Payment Terms:</span> ${data.paymentTerms || '-'}</p>
+                        </div>
+                        <div>
+                            <p class="mb-1 text-sm font-medium">Scope of Services</p>
+                            <p class="text-sm text-zinc-600 dark:text-zinc-300">${data.scope || '-'}</p>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-zinc-50 dark:bg-zinc-800">
+                                    <tr class="text-left text-xs uppercase text-zinc-500">
+                                        <th class="px-2 py-2">#</th><th class="px-2 py-2">Rank</th><th class="px-2 py-2">Category</th><th class="px-2 py-2">Qty</th><th class="px-2 py-2">Basis</th><th class="px-2 py-2">Rate</th><th class="px-2 py-2">Duration</th><th class="px-2 py-2">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rows.length ? rows.map((row) => `
+                                        <tr class="border-t border-zinc-200 dark:border-zinc-700">
+                                            <td class="px-2 py-2">${row.index}</td>
+                                            <td class="px-2 py-2">${row.rank || '-'}</td>
+                                            <td class="px-2 py-2">${row.category || '-'}</td>
+                                            <td class="px-2 py-2">${row.qty}</td>
+                                            <td class="px-2 py-2">${row.basis || '-'}</td>
+                                            <td class="px-2 py-2">${data.currency} ${fmt(row.rate)}</td>
+                                            <td class="px-2 py-2">${row.duration}</td>
+                                            <td class="px-2 py-2">${data.currency} ${fmt(row.amount)}</td>
+                                        </tr>
+                                    `).join('') : '<tr><td colspan="8" class="px-2 py-3 text-center text-zinc-500">No crew lines added.</td></tr>'}
+                                </tbody>
+                                <tfoot>
+                                    <tr class="border-t border-zinc-200 dark:border-zinc-700">
+                                        <td colspan="7" class="px-2 py-2 text-right font-medium">Total</td>
+                                        <td class="px-2 py-2 font-semibold">${data.currency} ${fmt(total)}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        <div class="text-xs text-zinc-500">
+                            <p><strong>Client PO:</strong> ${data.clientPo || '-'}</p>
+                        </div>
+                    </div>
+                `;
+            }
         })();
     </script>
 </x-layouts::app>
