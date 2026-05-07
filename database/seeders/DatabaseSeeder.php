@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Client;
+use App\Models\Rank;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -36,6 +37,24 @@ class DatabaseSeeder extends Seeder
             'email' => 'contracts@dpworld.test',
             'phone' => '+971500000002',
             'company' => 'DP World',
+        ]);
+
+        Rank::query()->updateOrCreate([
+            'name' => 'Master',
+        ], [
+            'category' => 'Marine',
+            'default_basis' => 'Day',
+            'default_rate' => 950.00,
+            'is_active' => true,
+        ]);
+
+        Rank::query()->updateOrCreate([
+            'name' => 'AB Seaman',
+        ], [
+            'category' => 'Marine',
+            'default_basis' => 'Day',
+            'default_rate' => 280.00,
+            'is_active' => true,
         ]);
     }
 }

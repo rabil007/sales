@@ -2,14 +2,18 @@
 
 use App\Models\Client;
 use App\Models\Quote;
+use App\Models\Rank;
 use App\Models\User;
 
 test('authenticated user can view quote pages', function () {
     $this->actingAs(User::factory()->create());
+    Rank::factory()->create(['name' => 'Master']);
 
     $this->get(route('dashboard'))->assertSuccessful();
     $this->get(route('quotes.index'))->assertSuccessful();
-    $this->get(route('quotes.create'))->assertSuccessful();
+    $this->get(route('quotes.create'))
+        ->assertSuccessful()
+        ->assertSee('Master');
 });
 
 test('user can create a quote with crew lines', function () {

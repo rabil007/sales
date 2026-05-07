@@ -111,7 +111,22 @@
                                 @endphp
                                 @foreach ($initialCrewLines as $index => $line)
                                     <tr class="border-t border-zinc-200 dark:border-zinc-700">
-                                        <td class="p-2"><input class="h-9 w-full min-w-[100px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][rank]" value="{{ $line['rank'] ?? '' }}" /></td>
+                                        <td class="p-2">
+                                            <select class="h-9 w-full min-w-[140px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][rank]" data-rank-select>
+                                                <option value="">Select rank</option>
+                                                @foreach ($ranks as $rankOption)
+                                                    <option
+                                                        value="{{ $rankOption->name }}"
+                                                        data-category="{{ $rankOption->category }}"
+                                                        data-basis="{{ $rankOption->default_basis }}"
+                                                        data-rate="{{ (float) $rankOption->default_rate }}"
+                                                        @selected(($line['rank'] ?? null) === $rankOption->name)
+                                                    >
+                                                        {{ $rankOption->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </td>
                                         <td class="p-2"><input class="h-9 w-full min-w-[90px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][category]" value="{{ $line['category'] ?? 'Marine' }}" /></td>
                                         <td class="p-2"><input class="h-9 w-16 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="1" name="crew_lines[{{ $index }}][qty]" value="{{ $line['qty'] ?? 1 }}" /></td>
                                         <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][basis]" value="{{ $line['basis'] ?? 'Day' }}" /></td>
@@ -266,12 +281,23 @@
 
             const inputClass = 'h-9 w-full rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100';
             const trashIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="size-4 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>`;
+            const rankOptions = @json($ranks->values()->all());
+
+            function buildRankSelect(index, selected = '') {
+                const options = rankOptions.map((rank) => {
+                    const isSelected = rank.name === selected ? 'selected' : '';
+
+                    return `<option value="${rank.name}" data-category="${rank.category}" data-basis="${rank.default_basis}" data-rate="${rank.default_rate}" ${isSelected}>${rank.name}</option>`;
+                }).join('');
+
+                return `<select class="h-9 w-full min-w-[140px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[${index}][rank]" data-rank-select><option value="">Select rank</option>${options}</select>`;
+            }
 
             function createCrewLineRow(index) {
                 const row = document.createElement('tr');
                 row.className = 'border-t border-zinc-200 dark:border-zinc-700';
                 row.innerHTML = `
-                    <td class="p-2"><input class="${inputClass} min-w-[100px]" name="crew_lines[${index}][rank]" /></td>
+                    <td class="p-2">${buildRankSelect(index)}</td>
                     <td class="p-2"><input class="${inputClass} min-w-[90px]" name="crew_lines[${index}][category]" value="Marine" /></td>
                     <td class="p-2"><input class="${inputClass} w-16" type="number" min="1" name="crew_lines[${index}][qty]" value="1" /></td>
                     <td class="p-2"><input class="${inputClass} w-20" name="crew_lines[${index}][basis]" value="Day" /></td>
@@ -301,6 +327,39 @@
 
                 if (event.target.matches('[data-remove-line]') || event.target.closest('[data-remove-line]')) {
                     event.target.closest('tr')?.remove();
+                }
+            });
+
+            body.addEventListener('change', (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLSelectElement) || !target.matches('[data-rank-select]')) {
+                    return;
+                }
+
+                const selectedOption = target.selectedOptions[0];
+                if (!selectedOption) {
+                    return;
+                }
+
+                const row = target.closest('tr');
+                if (!row) {
+                    return;
+                }
+
+                const categoryInput = row.querySelector('[name*="[category]"]');
+                const basisInput = row.querySelector('[name*="[basis]"]');
+                const rateInput = row.querySelector('[name*="[rate]"]');
+
+                if (categoryInput instanceof HTMLInputElement && selectedOption.dataset.category) {
+                    categoryInput.value = selectedOption.dataset.category;
+                }
+
+                if (basisInput instanceof HTMLInputElement && selectedOption.dataset.basis) {
+                    basisInput.value = selectedOption.dataset.basis;
+                }
+
+                if (rateInput instanceof HTMLInputElement && selectedOption.dataset.rate) {
+                    rateInput.value = selectedOption.dataset.rate;
                 }
             });
 

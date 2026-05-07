@@ -19,6 +19,9 @@
                 <flux:navbar.item icon="building-office-2" :href="route('clients.index')" :current="request()->routeIs('clients.*')" wire:navigate>
                     {{ __('Clients') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="user-group" :href="route('ranks.index')" :current="request()->routeIs('ranks.*')" wire:navigate>
+                    {{ __('Ranks') }}
+                </flux:navbar.item>
 
             </flux:navbar>
 
@@ -44,6 +47,9 @@
                     </flux:sidebar.item>
                     <flux:sidebar.item icon="building-office-2" :href="route('clients.index')" :current="request()->routeIs('clients.*')" wire:navigate>
                         {{ __('Clients')  }}
+                    </flux:sidebar.item>
+                    <flux:sidebar.item icon="user-group" :href="route('ranks.index')" :current="request()->routeIs('ranks.*')" wire:navigate>
+                        {{ __('Ranks')  }}
                     </flux:sidebar.item>
 
                 </flux:sidebar.group>

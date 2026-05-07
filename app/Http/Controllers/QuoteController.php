@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\QuoteRequest;
 use App\Models\Client;
 use App\Models\Quote;
+use App\Models\Rank;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -65,6 +66,7 @@ class QuoteController extends Controller
             ]),
             'crewLines' => [],
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
+            'ranks' => Rank::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'category', 'default_basis', 'default_rate']),
             'isEdit' => false,
         ]);
     }
@@ -114,6 +116,7 @@ class QuoteController extends Controller
             'quote' => $quote,
             'crewLines' => $quote->crewLines->toArray(),
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
+            'ranks' => Rank::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'category', 'default_basis', 'default_rate']),
             'isEdit' => true,
         ]);
     }
