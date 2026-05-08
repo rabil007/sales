@@ -40,7 +40,6 @@ class QuoteRequest extends FormRequest
             'scope' => ['nullable', 'string'],
             'terms_conditions' => ['nullable', 'string'],
             'special_conditions' => ['nullable', 'string'],
-            'renewal_notice_days' => ['nullable', 'integer', 'min:1'],
             'terms' => ['nullable', 'array'],
             'terms.*' => ['nullable', 'string'],
             'crew_lines' => ['nullable', 'array'],

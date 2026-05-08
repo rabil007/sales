@@ -432,7 +432,6 @@ class QuoteController extends Controller
                     'scope',
                     'terms_conditions',
                     'special_conditions',
-                    'renewal_notice_days',
                     'terms',
                 ]),
                 'doc_no' => $this->generateDocNo(),

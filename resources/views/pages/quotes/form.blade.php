@@ -62,14 +62,14 @@
                     <div>
                         <flux:heading size="sm" class="mb-4">{{ __('Document details') }}</flux:heading>
                         <div class="grid gap-4 md:grid-cols-2">
-                            <flux:input name="doc_no" label="Document No." :value="old('doc_no', $quote->doc_no)" required />
+                            <flux:input name="doc_no" label="Document No." placeholder="e.g. OMS-Q-2026-001" :value="old('doc_no', $quote->doc_no)" required />
                             <flux:select name="type" label="Agreement Type" required>
                                 @foreach (['Proposal', 'Crew Supply Agreement', 'Rate Contract', 'Purchase Order'] as $typeOption)
                                     <option value="{{ $typeOption }}" @selected(old('type', $quote->type) === $typeOption)>{{ $typeOption }}</option>
                                 @endforeach
                             </flux:select>
-                            <flux:input name="issue_date" type="date" label="Issue Date" :value="old('issue_date', optional($quote->issue_date)->toDateString())" required />
-                            <flux:input name="expiry_date" type="date" label="Expiry Date" :value="old('expiry_date', optional($quote->expiry_date)->toDateString())" />
+                            <flux:input name="issue_date" type="date" label="Issue Date" placeholder="Select issue date" :value="old('issue_date', optional($quote->issue_date)->toDateString())" required />
+                            <flux:input name="expiry_date" type="date" label="Expiry Date" placeholder="Select expiry date" :value="old('expiry_date', optional($quote->expiry_date)->toDateString())" />
                             <flux:select name="status" label="Status" required>
                                 @foreach (['Draft', 'Sent', 'Approved', 'Active', 'Expired'] as $statusOption)
                                     <option value="{{ $statusOption }}" @selected(old('status', $quote->status) === $statusOption)>{{ $statusOption }}</option>
@@ -97,14 +97,13 @@
                                     </option>
                                 @endforeach
                             </flux:select>
-                            <flux:input name="client_po" label="Client PO Reference" :value="old('client_po', $quote->client_po)" />
-                            <flux:input name="vessel" label="Vessel / Project" :value="old('vessel', $quote->vessel)" />
-                            <flux:input name="location" label="Location / Field" :value="old('location', $quote->location)" />
-                            <flux:input name="start_date" type="date" label="Contract Start Date" :value="old('start_date', optional($quote->start_date)->toDateString())" />
-                            <flux:input name="end_date" type="date" label="Contract End Date" :value="old('end_date', optional($quote->end_date)->toDateString())" />
-                            <flux:input name="duration_text" label="Contract Duration" :value="old('duration_text', $quote->duration_text)" />
-                            <flux:input name="project_name" label="Project Name" :value="old('project_name', $quote->project_name)" />
-                            <flux:input name="renewal_notice_days" type="number" min="1" label="Renewal Notice (Days)" :value="old('renewal_notice_days', $quote->renewal_notice_days)" />
+                            <flux:input name="client_po" label="Client PO Reference" placeholder="e.g. PO-2026-0441" :value="old('client_po', $quote->client_po)" />
+                            <flux:input name="vessel" label="Vessel / Project" placeholder="e.g. Barge 14" :value="old('vessel', $quote->vessel)" />
+                            <flux:input name="location" label="Location / Field" placeholder="e.g. Abu Dhabi Offshore" :value="old('location', $quote->location)" />
+                            <flux:input name="start_date" type="date" label="Contract Start Date" placeholder="Select start date" :value="old('start_date', optional($quote->start_date)->toDateString())" />
+                            <flux:input name="end_date" type="date" label="Contract End Date" placeholder="Select end date" :value="old('end_date', optional($quote->end_date)->toDateString())" />
+                            <flux:input name="duration_text" label="Contract Duration" placeholder="e.g. 30 days / 6 months" :value="old('duration_text', $quote->duration_text)" />
+                            <flux:input name="project_name" label="Project Name" placeholder="e.g. Offshore Campaign Crew" :value="old('project_name', $quote->project_name)" />
                         </div>
                     </div>
                 </fieldset>
@@ -170,8 +169,8 @@
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="p-2"><input class="h-9 w-full min-w-[90px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][category]" value="{{ $line['category'] ?? 'Marine' }}" autocomplete="off" /></td>
-                                        <td class="p-2"><input class="h-9 w-16 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="1" name="crew_lines[{{ $index }}][qty]" value="{{ $line['qty'] ?? 1 }}" /></td>
+                                        <td class="p-2"><input class="h-9 w-full min-w-[90px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][category]" value="{{ $line['category'] ?? 'Marine' }}" placeholder="Marine" autocomplete="off" /></td>
+                                        <td class="p-2"><input class="h-9 w-16 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="1" name="crew_lines[{{ $index }}][qty]" value="{{ $line['qty'] ?? 1 }}" placeholder="1" /></td>
                                         <td class="p-2">
                                             <select class="h-9 w-26 shrink-0 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][basis]" data-basis-select>
                                                 @foreach (['Day', 'Month', 'Fixed'] as $basisOption)
@@ -179,15 +178,15 @@
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][rate]" value="{{ $line['rate'] ?? 0 }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][monthly_rate]" value="{{ $line['monthly_rate'] ?? 0 }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="0" name="crew_lines[{{ $index }}][duration_days]" value="{{ $line['duration_days'] ?? $line['duration'] ?? 0 }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="0" name="crew_lines[{{ $index }}][duration_months]" value="{{ $line['duration_months'] ?? 0 }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][manual_total]" value="{{ $line['manual_total'] ?? 0 }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][ot_rate]" value="{{ $line['ot_rate'] ?? 0 }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-32 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="date" name="crew_lines[{{ $index }}][mob_date]" value="{{ $line['mob_date'] ?? '' }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-32 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="date" name="crew_lines[{{ $index }}][demob_date]" value="{{ $line['demob_date'] ?? '' }}" /></td>
-                                        <td class="p-2"><input class="h-9 w-full min-w-[100px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][remarks]" value="{{ $line['remarks'] ?? '' }}" autocomplete="off" /></td>
+                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][rate]" value="{{ $line['rate'] ?? 0 }}" placeholder="0.00" /></td>
+                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][monthly_rate]" value="{{ $line['monthly_rate'] ?? 0 }}" placeholder="0.00" /></td>
+                                        <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="0" name="crew_lines[{{ $index }}][duration_days]" value="{{ $line['duration_days'] ?? $line['duration'] ?? 0 }}" placeholder="0" /></td>
+                                        <td class="p-2"><input class="h-9 w-20 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" min="0" name="crew_lines[{{ $index }}][duration_months]" value="{{ $line['duration_months'] ?? 0 }}" placeholder="0" /></td>
+                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][manual_total]" value="{{ $line['manual_total'] ?? 0 }}" placeholder="0.00" /></td>
+                                        <td class="p-2"><input class="h-9 w-24 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="number" step="0.01" min="0" name="crew_lines[{{ $index }}][ot_rate]" value="{{ $line['ot_rate'] ?? 0 }}" placeholder="0.00" /></td>
+                                        <td class="p-2"><input class="h-9 w-32 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="date" name="crew_lines[{{ $index }}][mob_date]" value="{{ $line['mob_date'] ?? '' }}" placeholder="Select date" /></td>
+                                        <td class="p-2"><input class="h-9 w-32 rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" type="date" name="crew_lines[{{ $index }}][demob_date]" value="{{ $line['demob_date'] ?? '' }}" placeholder="Select date" /></td>
+                                        <td class="p-2"><input class="h-9 w-full min-w-[100px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][remarks]" value="{{ $line['remarks'] ?? '' }}" placeholder="Optional notes" autocomplete="off" /></td>
                                         <td class="p-2 text-right">
                                             <flux:tooltip content="{{ __('Remove row') }}">
                                                 <flux:button type="button" variant="ghost" icon="trash" size="sm" class="size-9!" data-remove-line />
@@ -207,20 +206,20 @@
                             <option value="{{ $termsOption }}" @selected(old('payment_terms', $quote->payment_terms) === $termsOption)>{{ $termsOption }}</option>
                         @endforeach
                     </flux:select>
-                    <flux:textarea name="scope" label="Scope of Services" rows="6">{{ old('scope', $quote->scope) }}</flux:textarea>
+                    <flux:textarea name="scope" label="Scope of Services" placeholder="Describe services included in this quote..." rows="6">{{ old('scope', $quote->scope) }}</flux:textarea>
 
                     <flux:separator />
 
                     <flux:heading size="sm">{{ __('Terms & conditions') }}</flux:heading>
-                    <flux:textarea name="terms_conditions" label="General Terms & Conditions" rows="4">{{ old('terms_conditions', $quote->terms_conditions) }}</flux:textarea>
-                    <flux:textarea name="special_conditions" label="Special Conditions" rows="3">{{ old('special_conditions', $quote->special_conditions) }}</flux:textarea>
+                    <flux:textarea name="terms_conditions" label="General Terms & Conditions" placeholder="Enter general terms and conditions..." rows="4">{{ old('terms_conditions', $quote->terms_conditions) }}</flux:textarea>
+                    <flux:textarea name="special_conditions" label="Special Conditions" placeholder="Add any special conditions (optional)..." rows="3">{{ old('special_conditions', $quote->special_conditions) }}</flux:textarea>
                     <div class="grid gap-4 md:grid-cols-2">
-                        <flux:textarea name="terms[mobilization_replacement]" label="Mobilization / Replacement" rows="4">{{ old('terms.mobilization_replacement', 'OMS will provide qualified replacements within 48 hours of notification. Mobilization costs are for the client account unless otherwise agreed.') }}</flux:textarea>
-                        <flux:textarea name="terms[invoicing_payment]" label="Invoicing & Payment" rows="4">{{ old('terms.invoicing_payment', 'Invoices will be raised monthly based on approved timesheets. Payment is due within the agreed payment terms from invoice date.') }}</flux:textarea>
-                        <flux:textarea name="terms[accommodation_transport]" label="Accommodation / Transport" rows="4">{{ old('terms.accommodation_transport', 'Accommodation, meals, and transport from port to vessel/site are for the client account unless otherwise stated in this agreement.') }}</flux:textarea>
-                        <flux:textarea name="terms[medical_certification]" label="Medical / Certification" rows="4">{{ old('terms.medical_certification', 'All crew will hold valid STCW, MLC, and role-specific certifications. Medical fitness will comply with ENG1 or equivalent standards.') }}</flux:textarea>
-                        <flux:textarea name="terms[termination]" label="Termination" rows="4">{{ old('terms.termination', 'Either party may terminate this agreement with 30 days written notice. Immediate termination applies in cases of gross misconduct or safety breach.') }}</flux:textarea>
-                        <flux:textarea name="terms[governing_law]" label="Governing Law" rows="4">{{ old('terms.governing_law', 'This agreement shall be governed by the laws of the United Arab Emirates. Disputes shall be resolved through arbitration in Abu Dhabi, UAE.') }}</flux:textarea>
+                        <flux:textarea name="terms[mobilization_replacement]" label="Mobilization / Replacement" placeholder="Add mobilization and replacement terms..." rows="4">{{ old('terms.mobilization_replacement', 'OMS will provide qualified replacements within 48 hours of notification. Mobilization costs are for the client account unless otherwise agreed.') }}</flux:textarea>
+                        <flux:textarea name="terms[invoicing_payment]" label="Invoicing & Payment" placeholder="Define invoicing and payment conditions..." rows="4">{{ old('terms.invoicing_payment', 'Invoices will be raised monthly based on approved timesheets. Payment is due within the agreed payment terms from invoice date.') }}</flux:textarea>
+                        <flux:textarea name="terms[accommodation_transport]" label="Accommodation / Transport" placeholder="Specify accommodation and transport responsibilities..." rows="4">{{ old('terms.accommodation_transport', 'Accommodation, meals, and transport from port to vessel/site are for the client account unless otherwise stated in this agreement.') }}</flux:textarea>
+                        <flux:textarea name="terms[medical_certification]" label="Medical / Certification" placeholder="Specify medical and certification requirements..." rows="4">{{ old('terms.medical_certification', 'All crew will hold valid STCW, MLC, and role-specific certifications. Medical fitness will comply with ENG1 or equivalent standards.') }}</flux:textarea>
+                        <flux:textarea name="terms[termination]" label="Termination" placeholder="Define termination notice and conditions..." rows="4">{{ old('terms.termination', 'Either party may terminate this agreement with 30 days written notice. Immediate termination applies in cases of gross misconduct or safety breach.') }}</flux:textarea>
+                        <flux:textarea name="terms[governing_law]" label="Governing Law" placeholder="Specify governing law and dispute resolution..." rows="4">{{ old('terms.governing_law', 'This agreement shall be governed by the laws of the United Arab Emirates. Disputes shall be resolved through arbitration in Abu Dhabi, UAE.') }}</flux:textarea>
                     </div>
                 </fieldset>
 
@@ -341,18 +340,18 @@
                 row.className = 'border-t border-zinc-200 dark:border-zinc-700';
                 row.innerHTML = `
                     <td class="p-2">${buildRankSelect(index)}</td>
-                    <td class="p-2"><input class="${inputClass} min-w-[90px]" name="crew_lines[${index}][category]" value="Marine" /></td>
-                    <td class="p-2"><input class="${inputClass} w-16" type="number" min="1" name="crew_lines[${index}][qty]" value="1" /></td>
+                    <td class="p-2"><input class="${inputClass} min-w-[90px]" name="crew_lines[${index}][category]" value="Marine" placeholder="Marine" /></td>
+                    <td class="p-2"><input class="${inputClass} w-16" type="number" min="1" name="crew_lines[${index}][qty]" value="1" placeholder="1" /></td>
                     <td class="p-2">${buildBasisSelect(index)}</td>
-                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][rate]" value="0" /></td>
-                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][monthly_rate]" value="0" /></td>
-                    <td class="p-2"><input class="${inputClass} w-20" type="number" min="0" name="crew_lines[${index}][duration_days]" value="0" /></td>
-                    <td class="p-2"><input class="${inputClass} w-20" type="number" min="0" name="crew_lines[${index}][duration_months]" value="0" /></td>
-                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][manual_total]" value="0" /></td>
-                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][ot_rate]" value="0" /></td>
-                    <td class="p-2"><input class="${inputClass} w-32" type="date" name="crew_lines[${index}][mob_date]" /></td>
-                    <td class="p-2"><input class="${inputClass} w-32" type="date" name="crew_lines[${index}][demob_date]" /></td>
-                    <td class="p-2"><input class="${inputClass} min-w-[100px]" name="crew_lines[${index}][remarks]" /></td>
+                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][rate]" value="0" placeholder="0.00" /></td>
+                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][monthly_rate]" value="0" placeholder="0.00" /></td>
+                    <td class="p-2"><input class="${inputClass} w-20" type="number" min="0" name="crew_lines[${index}][duration_days]" value="0" placeholder="0" /></td>
+                    <td class="p-2"><input class="${inputClass} w-20" type="number" min="0" name="crew_lines[${index}][duration_months]" value="0" placeholder="0" /></td>
+                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][manual_total]" value="0" placeholder="0.00" /></td>
+                    <td class="p-2"><input class="${inputClass} w-24" type="number" step="0.01" min="0" name="crew_lines[${index}][ot_rate]" value="0" placeholder="0.00" /></td>
+                    <td class="p-2"><input class="${inputClass} w-32" type="date" name="crew_lines[${index}][mob_date]" placeholder="Select date" /></td>
+                    <td class="p-2"><input class="${inputClass} w-32" type="date" name="crew_lines[${index}][demob_date]" placeholder="Select date" /></td>
+                    <td class="p-2"><input class="${inputClass} min-w-[100px]" name="crew_lines[${index}][remarks]" placeholder="Optional notes" /></td>
                     <td class="p-2 text-right">
                         <button type="button" class="inline-flex size-9 items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/60 dark:hover:text-red-400" data-remove-line aria-label="${removeRowLabel}">
                             ${trashIcon}

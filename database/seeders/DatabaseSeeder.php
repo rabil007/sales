@@ -97,7 +97,6 @@ class DatabaseSeeder extends Seeder
             'scope' => 'Source and supply of deck and bridge crew under OMS payroll and client secondment model.',
             'terms_conditions' => 'Rates are VAT exclusive. Monthly invoices are due before the 20th of each month.',
             'special_conditions' => 'Client to provide LOA for gate pass processing.',
-            'renewal_notice_days' => 30,
             'terms' => ['mobilization' => 'Included', 'demobilization' => 'Included'],
             'total_amount' => 49600.00,
         ]);
@@ -159,7 +158,6 @@ class DatabaseSeeder extends Seeder
             'scope' => 'Monthly crew supply for marine terminal support, transport arranged by client.',
             'terms_conditions' => 'Client validates attendance sheet by month-end.',
             'special_conditions' => null,
-            'renewal_notice_days' => 45,
             'terms' => ['insurance' => 'Supplier scope', 'visa' => 'Supplier scope'],
             'total_amount' => 47600.00,
         ]);
@@ -221,7 +219,6 @@ class DatabaseSeeder extends Seeder
             'scope' => 'Crew mobilization proposal pending final line-up.',
             'terms_conditions' => null,
             'special_conditions' => null,
-            'renewal_notice_days' => 30,
             'terms' => ['status' => 'Awaiting client confirmation'],
             'total_amount' => 0,
         ]);

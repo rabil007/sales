@@ -29,7 +29,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'project_name',
     'terms_conditions',
     'special_conditions',
-    'renewal_notice_days',
     'terms',
     'renewed_from_expiry_date',
     'total_amount',
@@ -50,7 +49,6 @@ class Quote extends Model
             'start_date' => 'date',
             'end_date' => 'date',
             'renewed_from_expiry_date' => 'date',
-            'renewal_notice_days' => 'integer',
             'terms' => 'array',
             'total_amount' => 'decimal:2',
         ];
