@@ -93,7 +93,7 @@
                 @endforeach
             </div>
 
-            <div class="fixed bottom-8 right-8 z-50 md:bottom-10 md:right-10">
+            <div class="sticky bottom-4 z-40 flex justify-end md:bottom-6">
                 <flux:button variant="primary" type="submit" icon="check" class="rounded-full px-8 shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.5)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.7)]">
                     {{ __('Save settings') }}
                 </flux:button>
