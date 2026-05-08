@@ -35,7 +35,8 @@ class CompanySettingController extends Controller
             File::ensureDirectoryExists($uploadDirectory);
 
             $uploadedFile = $request->file('app_logo');
-            $newFileName = Str::uuid()->toString().'.'.$uploadedFile->getClientOriginalExtension();
+            $extension = strtolower($uploadedFile->extension() ?: 'png');
+            $newFileName = Str::uuid()->toString().'.'.$extension;
             $uploadedFile->move($uploadDirectory, $newFileName);
             $newLogoPath = 'app-branding/'.$newFileName;
 

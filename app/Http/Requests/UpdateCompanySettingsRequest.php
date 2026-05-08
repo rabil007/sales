@@ -32,7 +32,7 @@ class UpdateCompanySettingsRequest extends FormRequest
         return [
             'settings' => ['present', 'array'],
             'settings.*' => ['nullable', 'string', 'max:2000'],
-            'app_logo' => ['nullable', 'image', 'max:2048'],
+            'app_logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
     }
 
