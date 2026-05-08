@@ -6,7 +6,7 @@ Rules for AI generation:
 # PHP & Livewire
 - Write modern PHP 8.3+ using typed properties, strict types, and arrow functions where appropriate.
 - Use Livewire 4 syntax (e.g., use #[Validate] and #[Computed] attributes).
-- Use Livewire Volt (single-file components) for simple UI views, and traditional Livewire Class/View pairs for complex logic like the QuoteBuilder.
+- Use Livewire Volt (single-file components) for focused settings screens (profile, security, appearance), and traditional controllers with Blade when forms are large or non-reactive (e.g. quotes, company/template settings).
 - Be efficient with data binding: prefer `wire:model.blur` or `wire:model.change` over `wire:model.live` to minimize server requests unless real-time validation is explicitly needed.
 
 # UI & Frontend

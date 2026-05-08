@@ -47,7 +47,7 @@ test('email verification status is unchanged when email address is unchanged', f
     expect($user->refresh()->email_verified_at)->not->toBeNull();
 });
 
-test('application branding can be updated from profile settings', function () {
+test('application name and logo can be updated from company template settings', function () {
     Storage::fake('public');
 
     CompanySetting::query()->updateOrCreate(
@@ -59,16 +59,14 @@ test('application branding can be updated from profile settings', function () {
         ['label' => 'Application Logo Path', 'group' => 'application', 'value' => 'overseas-marine logo.png'],
     );
 
-    $user = User::factory()->create();
+    $user = User::factory()->create(['email_verified_at' => now()]);
 
-    $this->actingAs($user);
-
-    $response = Livewire::test('pages::settings.branding')
-        ->set('appName', 'Sales Control')
-        ->set('appLogo', UploadedFile::fake()->image('brand.png'))
-        ->call('updateApplicationBranding');
-
-    $response->assertHasNoErrors();
+    $this->actingAs($user)->put(route('settings.company.update'), [
+        'settings' => [
+            'app_name' => 'Sales Control',
+        ],
+        'app_logo' => UploadedFile::fake()->image('brand.png'),
+    ])->assertRedirect();
 
     expect(CompanySetting::get('app_name'))->toBe('Sales Control');
     $logoPath = CompanySetting::get('app_logo_path');

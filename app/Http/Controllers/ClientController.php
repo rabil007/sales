@@ -15,6 +15,8 @@ class ClientController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Client::class);
+
         $q = $request->string('q')->trim()->toString();
         $company = $request->string('company')->toString();
         $contact = $request->string('contact')->toString();
@@ -73,6 +75,8 @@ class ClientController extends Controller
      */
     public function create(): View
     {
+        $this->authorize('create', Client::class);
+
         return view('pages.clients.form', [
             'client' => new Client,
             'isEdit' => false,
@@ -84,6 +88,8 @@ class ClientController extends Controller
      */
     public function store(ClientRequest $request): RedirectResponse
     {
+        $this->authorize('create', Client::class);
+
         Client::query()->create($request->validated());
 
         return redirect()->route('clients.index')->with('status', 'Client created.');
@@ -94,6 +100,8 @@ class ClientController extends Controller
      */
     public function edit(Client $client): View
     {
+        $this->authorize('update', $client);
+
         return view('pages.clients.form', [
             'client' => $client,
             'isEdit' => true,
@@ -105,6 +113,8 @@ class ClientController extends Controller
      */
     public function update(ClientRequest $request, Client $client): RedirectResponse
     {
+        $this->authorize('update', $client);
+
         $client->update($request->validated());
 
         return redirect()->route('clients.index')->with('status', 'Client updated.');
@@ -115,6 +125,8 @@ class ClientController extends Controller
      */
     public function destroy(Client $client): RedirectResponse
     {
+        $this->authorize('delete', $client);
+
         $client->delete();
 
         return redirect()->route('clients.index')->with('status', 'Client deleted.');

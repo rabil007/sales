@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateCompanySettingsRequest;
 use App\Models\CompanySetting;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -12,6 +12,8 @@ class CompanySettingController extends Controller
 {
     public function edit(): View
     {
+        $this->authorize('manageSettings', CompanySetting::query()->make());
+
         $settings = CompanySetting::query()
             ->orderBy('group')
             ->orderBy('id')
@@ -21,13 +23,9 @@ class CompanySettingController extends Controller
         return view('pages.settings.company', ['settings' => $settings]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateCompanySettingsRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'settings' => ['required', 'array'],
-            'settings.*' => ['nullable', 'string', 'max:500'],
-            'app_logo' => ['nullable', 'image', 'max:2048'],
-        ]);
+        $settingsInput = $request->validated('settings', []);
 
         if ($request->hasFile('app_logo')) {
             $currentLogoPath = CompanySetting::get('app_logo_path', 'overseas-marine logo.png');
@@ -37,10 +35,18 @@ class CompanySettingController extends Controller
                 Storage::disk('public')->delete($currentLogoPath);
             }
 
-            $data['settings']['app_logo_path'] = $newLogoPath;
+            $settingsInput['app_logo_path'] = $newLogoPath;
         }
 
-        foreach ($data['settings'] as $key => $value) {
+        foreach ($settingsInput as $key => $value) {
+            if (! in_array($key, CompanySetting::MANAGEABLE_SETTING_KEYS, true)) {
+                continue;
+            }
+
+            if ($key === 'app_logo_path' && ! $request->hasFile('app_logo')) {
+                continue;
+            }
+
             CompanySetting::query()->updateOrCreate(
                 ['key' => $key],
                 [
@@ -51,6 +57,11 @@ class CompanySettingController extends Controller
                     },
                     'group' => match ($key) {
                         'app_name', 'app_logo_path' => 'application',
+                        'company_name', 'company_legal_name' => 'identity',
+                        'company_address', 'company_phone', 'company_email', 'company_website' => 'contact',
+                        'signatory_name', 'signatory_role' => 'signatory',
+                        'accom_single_rate', 'accom_double_rate', 'accom_events_rate' => 'accommodation',
+                        'transport_rate_1', 'transport_rate_2', 'transport_rate_3', 'transport_rate_4', 'transport_rate_5' => 'transportation',
                         default => 'general',
                     },
                     'value' => (string) $value,

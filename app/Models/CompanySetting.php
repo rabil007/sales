@@ -9,6 +9,33 @@ use Illuminate\Database\Eloquent\Model;
 class CompanySetting extends Model
 {
     /**
+     * Allowed keys when updating settings through the authenticated settings form.
+     * Prevents arbitrary key injection via crafted POST payloads.
+     *
+     * @var list<string>
+     */
+    public const MANAGEABLE_SETTING_KEYS = [
+        'app_name',
+        'app_logo_path',
+        'company_name',
+        'company_legal_name',
+        'company_address',
+        'company_phone',
+        'company_email',
+        'company_website',
+        'signatory_name',
+        'signatory_role',
+        'accom_single_rate',
+        'accom_double_rate',
+        'accom_events_rate',
+        'transport_rate_1',
+        'transport_rate_2',
+        'transport_rate_3',
+        'transport_rate_4',
+        'transport_rate_5',
+    ];
+
+    /**
      * Retrieve a setting value by key with an optional default.
      */
     public static function get(string $key, string $default = ''): string

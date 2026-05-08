@@ -6,8 +6,9 @@ use App\Http\Requests\QuoteRequest;
 use App\Models\Client;
 use App\Models\Quote;
 use App\Models\Rank;
+use App\Support\Quotes\CrewLineTotalsCalculator;
+use App\Support\Quotes\QuoteDocumentNumberGenerator;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -18,12 +19,17 @@ class QuoteController extends Controller
 {
     private const LOCKED_STATUSES = ['Approved', 'Active', 'Expired'];
 
+    public function __construct(
+        private CrewLineTotalsCalculator $crewLineTotals,
+        private QuoteDocumentNumberGenerator $documentNumbers,
+    ) {}
+
     /**
      * Display dashboard summary.
      */
     public function dashboard(): View
     {
-        $this->syncExpiredQuotes();
+        $this->authorize('viewAny', Quote::class);
 
         $statusCounts = Quote::query()
             ->select('status', DB::raw('COUNT(*) as count'))
@@ -112,7 +118,7 @@ class QuoteController extends Controller
      */
     public function index(Request $request): View
     {
-        $this->syncExpiredQuotes();
+        $this->authorize('viewAny', Quote::class);
 
         $status = $request->string('status')->toString();
         $q = $request->string('q')->trim()->toString();
@@ -146,9 +152,11 @@ class QuoteController extends Controller
      */
     public function create(): View
     {
+        $this->authorize('create', Quote::class);
+
         return view('pages.quotes.form', [
             'quote' => new Quote([
-                'doc_no' => $this->generateDocNo(),
+                'doc_no' => $this->documentNumbers->next(),
                 'type' => 'Proposal',
                 'issue_date' => now()->toDateString(),
                 'status' => 'Draft',
@@ -168,16 +176,18 @@ class QuoteController extends Controller
      */
     public function store(QuoteRequest $request): RedirectResponse
     {
+        $this->authorize('create', Quote::class);
+
         DB::transaction(function () use ($request): Quote {
             $validated = $request->validated();
-            $crewLines = $this->normalizeCrewLines($validated['crew_lines'] ?? []);
+            $crewLines = $this->crewLineTotals->normalize($validated['crew_lines'] ?? []);
             $client = $this->resolveClient($validated);
 
             $quote = Quote::query()->create([
                 ...collect($validated)->except('crew_lines')->all(),
                 'client_id' => $client?->id,
                 'client_name' => $client?->name ?? $validated['client_name'],
-                'total_amount' => $this->calculateTotalAmount($crewLines),
+                'total_amount' => $this->crewLineTotals->total($crewLines),
             ]);
 
             $quote->crewLines()->createMany($crewLines);
@@ -193,6 +203,8 @@ class QuoteController extends Controller
      */
     public function show(Quote $quote): View
     {
+        $this->authorize('view', $quote);
+
         $quote->load(['crewLines', 'client']);
 
         return view('pages.quotes.show', ['quote' => $quote]);
@@ -200,6 +212,8 @@ class QuoteController extends Controller
 
     public function preview(Quote $quote): View
     {
+        $this->authorize('view', $quote);
+
         $quote->load(['crewLines', 'client']);
 
         return view('pdf.quote-proposal', [
@@ -210,6 +224,8 @@ class QuoteController extends Controller
 
     public function previewPdf(Quote $quote): Response
     {
+        $this->authorize('view', $quote);
+
         $quote->load(['crewLines', 'client']);
 
         $pdf = Pdf::loadView('pdf.quote-proposal', [
@@ -222,6 +238,8 @@ class QuoteController extends Controller
 
     public function exportPdf(Quote $quote): Response
     {
+        $this->authorize('view', $quote);
+
         $quote->load(['crewLines', 'client']);
 
         $pdf = Pdf::loadView('pdf.quote-proposal', [
@@ -237,7 +255,8 @@ class QuoteController extends Controller
      */
     public function edit(Quote $quote): View
     {
-        $this->syncExpiredQuotes();
+        $this->authorize('update', $quote);
+
         $quote->refresh()->load(['crewLines', 'client']);
 
         return view('pages.quotes.form', [
@@ -255,20 +274,22 @@ class QuoteController extends Controller
      */
     public function update(QuoteRequest $request, Quote $quote): RedirectResponse
     {
+        $this->authorize('update', $quote);
+
         if ($this->isLocked($quote)) {
             return redirect()->route('quotes.index')->with('status', 'Locked quotes cannot be edited.');
         }
 
         DB::transaction(function () use ($request, $quote): void {
             $validated = $request->validated();
-            $crewLines = $this->normalizeCrewLines($validated['crew_lines'] ?? []);
+            $crewLines = $this->crewLineTotals->normalize($validated['crew_lines'] ?? []);
             $client = $this->resolveClient($validated);
 
             $quote->update([
                 ...collect($validated)->except('crew_lines')->all(),
                 'client_id' => $client?->id,
                 'client_name' => $client?->name ?? $validated['client_name'],
-                'total_amount' => $this->calculateTotalAmount($crewLines),
+                'total_amount' => $this->crewLineTotals->total($crewLines),
             ]);
 
             $quote->crewLines()->delete();
@@ -283,6 +304,8 @@ class QuoteController extends Controller
      */
     public function destroy(Quote $quote): RedirectResponse
     {
+        $this->authorize('delete', $quote);
+
         if ($this->isLocked($quote)) {
             return redirect()->route('quotes.index')->with('status', 'Locked quotes cannot be deleted.');
         }
@@ -290,69 +313,6 @@ class QuoteController extends Controller
         $quote->delete();
 
         return redirect()->route('quotes.index')->with('status', 'Quote deleted.');
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $validatedLines
-     */
-    private function normalizeCrewLines(array $validatedLines): array
-    {
-        return collect($validatedLines)
-            ->filter(fn (array $line) => filled($line['rank'] ?? null))
-            ->map(function (array $line): array {
-                $lineTotal = $this->calculateLineTotal($line);
-
-                return [
-                    ...$line,
-                    'duration' => $this->resolveDuration($line),
-                    'duration_days' => (int) ($line['duration_days'] ?? 0),
-                    'duration_months' => (int) ($line['duration_months'] ?? 0),
-                    'line_total' => $lineTotal,
-                ];
-            })
-            ->values()
-            ->all();
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $crewLines
-     */
-    private function calculateTotalAmount(array $crewLines): float
-    {
-        return collect($crewLines)->sum(fn (array $line): float => (float) ($line['line_total'] ?? 0));
-    }
-
-    /**
-     * @param  array<string, mixed>  $line
-     */
-    private function calculateLineTotal(array $line): float
-    {
-        $qty = (float) ($line['qty'] ?? 0);
-        $basis = (string) ($line['basis'] ?? 'Day');
-
-        if ($basis === 'Month') {
-            return $qty * (float) ($line['duration_months'] ?? 0) * (float) ($line['monthly_rate'] ?? 0);
-        }
-
-        if ($basis === 'Fixed') {
-            return (float) ($line['manual_total'] ?? 0);
-        }
-
-        return $qty * (float) ($line['duration_days'] ?? ($line['duration'] ?? 0)) * (float) ($line['rate'] ?? 0);
-    }
-
-    /**
-     * @param  array<string, mixed>  $line
-     */
-    private function resolveDuration(array $line): int
-    {
-        $basis = (string) ($line['basis'] ?? 'Day');
-
-        return match ($basis) {
-            'Month' => (int) ($line['duration_months'] ?? 0),
-            'Fixed' => 1,
-            default => (int) ($line['duration_days'] ?? ($line['duration'] ?? 0)),
-        };
     }
 
     /**
@@ -371,47 +331,60 @@ class QuoteController extends Controller
         return null;
     }
 
-    private function generateDocNo(): string
-    {
-        $year = now()->format('Y');
-        $latest = Quote::query()
-            ->where('doc_no', 'like', "OMS-Q-{$year}-%")
-            ->latest('id')
-            ->value('doc_no');
-
-        if (! is_string($latest)) {
-            return "OMS-Q-{$year}-001";
-        }
-
-        $lastNumber = (int) substr($latest, -3);
-
-        return sprintf('OMS-Q-%s-%03d', $year, $lastNumber + 1);
-    }
-
     public function send(Quote $quote): RedirectResponse
     {
+        $this->authorize('update', $quote);
+
         return $this->transitionTo($quote, 'Sent');
     }
 
     public function approve(Quote $quote): RedirectResponse
     {
+        $this->authorize('update', $quote);
+
         return $this->transitionTo($quote, 'Approved');
     }
 
     public function activate(Quote $quote): RedirectResponse
     {
+        $this->authorize('update', $quote);
+
         return $this->transitionTo($quote, 'Active');
     }
 
     public function expire(Quote $quote): RedirectResponse
     {
+        $this->authorize('update', $quote);
+
         return $this->transitionTo($quote, 'Expired');
     }
 
     public function renew(Quote $quote): RedirectResponse
     {
-        $newQuote = DB::transaction(function () use ($quote): Quote {
+        $this->authorize('renew', $quote);
+
+        DB::transaction(function () use ($quote): void {
             $quote->loadMissing('crewLines');
+            $linesPayload = $quote->crewLines->map(fn ($line) => $line->only([
+                'rank',
+                'category',
+                'qty',
+                'basis',
+                'rate',
+                'monthly_rate',
+                'duration',
+                'duration_days',
+                'duration_months',
+                'manual_total',
+                'ot_rate',
+                'mob_date',
+                'demob_date',
+                'remarks',
+                'line_total',
+            ]))->all();
+
+            $renewalTotal = (float) collect($linesPayload)->sum(fn ($line): float => (float) ($line['line_total'] ?? 0));
+
             $newQuote = Quote::query()->create([
                 ...$quote->only([
                     'type',
@@ -429,33 +402,15 @@ class QuoteController extends Controller
                     'scope',
                     'special_conditions',
                 ]),
-                'doc_no' => $this->generateDocNo(),
+                'doc_no' => $this->documentNumbers->next(),
                 'issue_date' => now()->toDateString(),
                 'expiry_date' => null,
                 'status' => 'Draft',
                 'renewed_from_expiry_date' => $quote->expiry_date,
-                'total_amount' => $quote->total_amount,
+                'total_amount' => $renewalTotal,
             ]);
 
-            $newQuote->crewLines()->createMany($quote->crewLines->map(fn ($line) => $line->only([
-                'rank',
-                'category',
-                'qty',
-                'basis',
-                'rate',
-                'monthly_rate',
-                'duration',
-                'duration_days',
-                'duration_months',
-                'manual_total',
-                'ot_rate',
-                'mob_date',
-                'demob_date',
-                'remarks',
-                'line_total',
-            ]))->all());
-
-            return $newQuote;
+            $newQuote->crewLines()->createMany($linesPayload);
         });
 
         return redirect()->route('quotes.index')->with('status', 'Renewal quote generated.');
@@ -471,14 +426,5 @@ class QuoteController extends Controller
     private function isLocked(Quote $quote): bool
     {
         return in_array($quote->status, self::LOCKED_STATUSES, true);
-    }
-
-    private function syncExpiredQuotes(): void
-    {
-        Quote::query()
-            ->whereNotNull('expiry_date')
-            ->whereDate('expiry_date', '<', Carbon::today())
-            ->where('status', '!=', 'Expired')
-            ->update(['status' => 'Expired']);
     }
 }

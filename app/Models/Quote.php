@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 #[Fillable([
     'doc_no',
@@ -65,5 +66,17 @@ class Quote extends Model
     public function crewLines(): HasMany
     {
         return $this->hasMany(QuoteCrewLine::class);
+    }
+
+    /**
+     * Mark non-expired quotes whose expiry date has passed as Expired.
+     */
+    public static function markPastExpiryAsExpired(): int
+    {
+        return (int) self::query()
+            ->whereNotNull('expiry_date')
+            ->whereDate('expiry_date', '<', Carbon::today())
+            ->where('status', '!=', 'Expired')
+            ->update(['status' => 'Expired']);
     }
 }

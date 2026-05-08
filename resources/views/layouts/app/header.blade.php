@@ -22,7 +22,7 @@
                 <flux:navbar.item icon="user-group" :href="route('ranks.index')" :current="request()->routeIs('ranks.*')" wire:navigate>
                     {{ __('Ranks') }}
                 </flux:navbar.item>
-                <flux:navbar.item icon="cog-6-tooth" :href="route('branding.edit')" :current="request()->routeIs('branding.*') || request()->routeIs('settings.company.*')" wire:navigate>
+                <flux:navbar.item icon="cog-6-tooth" :href="route('settings.company.edit')" :current="request()->routeIs('settings.company.*') || request()->routeIs('branding.*')" wire:navigate>
                     {{ __('Settings') }}
                 </flux:navbar.item>
 

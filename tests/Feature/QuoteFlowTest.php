@@ -2,6 +2,7 @@
 
 use App\Models\Client;
 use App\Models\Quote;
+use App\Models\QuoteCrewLine;
 use App\Models\Rank;
 use App\Models\User;
 
@@ -157,9 +158,23 @@ test('user can preview quote as inline pdf viewer', function () {
 test('user can use workflow transitions and renew agreement', function () {
     $this->actingAs(User::factory()->create());
 
-    $quote = Quote::factory()->hasCrewLines(1)->create([
+    $quote = Quote::factory()->create([
         'status' => 'Draft',
         'expiry_date' => now()->addMonth()->toDateString(),
+    ]);
+
+    QuoteCrewLine::factory()->for($quote)->create([
+        'rank' => 'Mate',
+        'category' => 'Marine',
+        'qty' => 2,
+        'basis' => 'Day',
+        'rate' => 100.00,
+        'duration_days' => 10,
+        'duration' => 10,
+        'duration_months' => 0,
+        'monthly_rate' => 0,
+        'manual_total' => 0,
+        'line_total' => 2000.00,
     ]);
 
     $this->post(route('quotes.send', $quote))->assertRedirect();
@@ -174,7 +189,19 @@ test('user can use workflow transitions and renew agreement', function () {
     expect(Quote::query()->count())->toBe(2);
     $renewedQuote = Quote::query()->whereKeyNot($quote->id)->firstOrFail();
     expect($renewedQuote->status)->toBe('Draft')
-        ->and($renewedQuote->crewLines()->count())->toBe(1);
+        ->and($renewedQuote->crewLines()->count())->toBe(1)
+        ->and((float) $renewedQuote->total_amount)->toBe(2000.0);
+});
+
+test('quotes sync-expired artisan command marks overdue quotes expired', function () {
+    $quote = Quote::factory()->create([
+        'expiry_date' => now()->subDay()->toDateString(),
+        'status' => 'Sent',
+    ]);
+
+    $this->artisan('quotes:sync-expired')->assertSuccessful();
+
+    expect($quote->fresh()->status)->toBe('Expired');
 });
 
 test('locked quote cannot be updated', function () {

@@ -15,6 +15,8 @@ class RankController extends Controller
      */
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Rank::class);
+
         $q = $request->string('q')->trim()->toString();
         $category = $request->string('category')->toString();
         $basis = $request->string('basis')->toString();
@@ -56,6 +58,8 @@ class RankController extends Controller
      */
     public function create(): View
     {
+        $this->authorize('create', Rank::class);
+
         return view('pages.ranks.form', [
             'rank' => new Rank([
                 'category' => 'Marine',
@@ -72,6 +76,8 @@ class RankController extends Controller
      */
     public function store(RankRequest $request): RedirectResponse
     {
+        $this->authorize('create', Rank::class);
+
         Rank::query()->create([
             ...$request->validated(),
             'is_active' => (bool) $request->boolean('is_active', true),
@@ -85,6 +91,8 @@ class RankController extends Controller
      */
     public function edit(Rank $rank): View
     {
+        $this->authorize('update', $rank);
+
         return view('pages.ranks.form', [
             'rank' => $rank,
             'isEdit' => true,
@@ -96,6 +104,8 @@ class RankController extends Controller
      */
     public function update(RankRequest $request, Rank $rank): RedirectResponse
     {
+        $this->authorize('update', $rank);
+
         $rank->update([
             ...$request->validated(),
             'is_active' => (bool) $request->boolean('is_active', false),
@@ -109,6 +119,8 @@ class RankController extends Controller
      */
     public function destroy(Rank $rank): RedirectResponse
     {
+        $this->authorize('delete', $rank);
+
         $rank->delete();
 
         return redirect()->route('ranks.index')->with('status', 'Rank deleted.');
@@ -119,6 +131,8 @@ class RankController extends Controller
      */
     public function toggleStatus(Rank $rank): RedirectResponse
     {
+        $this->authorize('update', $rank);
+
         $rank->update([
             'is_active' => ! $rank->is_active,
         ]);
