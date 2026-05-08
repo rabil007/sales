@@ -135,6 +135,7 @@
         $subject           = $quote->project_name ?: 'Crew Requirements';
         $scope             = $quote->scope ?: 'Source and Supply of appropriate crew who will be under Supplier payroll and seconded to Client. Rates provided as per Annex I';
         $duration          = $quote->duration_text ?: 'One (1) year';
+        $paymentTerms      = $quote->payment_terms;
         $vessel            = $quote->vessel;
         $clientPo          = $quote->client_po;
         $specialConditions = $quote->special_conditions;
@@ -249,6 +250,9 @@
 
         <div class="section">
             <div class="section-title">6.&nbsp; Fees and Payment Terms:</div>
+            @if ($paymentTerms)
+                <strong>Payment Terms:</strong> {{ $paymentTerms }}<br><br>
+            @endif
             Invoice for advance payment (for crew wages) issued by Supplier before 10<sup>th</sup> of every month and
             Client must release it before 20<sup>th</sup> of every month so that Supplier will pay crew before month end
             via UAE Wage Protection System. <strong>First month invoice will be raised before mobilisation and to

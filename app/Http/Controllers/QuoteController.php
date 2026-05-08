@@ -205,7 +205,6 @@ class QuoteController extends Controller
         return view('pdf.quote-proposal', [
             'quote' => $quote,
             'today' => now(),
-            'terms' => is_array($quote->terms) ? $quote->terms : [],
         ]);
     }
 
@@ -216,7 +215,6 @@ class QuoteController extends Controller
         $pdf = Pdf::loadView('pdf.quote-proposal', [
             'quote' => $quote,
             'today' => now(),
-            'terms' => is_array($quote->terms) ? $quote->terms : [],
         ])->setPaper('a4');
 
         return $pdf->stream($quote->doc_no.'-proposal.pdf');
@@ -229,7 +227,6 @@ class QuoteController extends Controller
         $pdf = Pdf::loadView('pdf.quote-proposal', [
             'quote' => $quote,
             'today' => now(),
-            'terms' => is_array($quote->terms) ? $quote->terms : [],
         ])->setPaper('a4');
 
         return $pdf->download($quote->doc_no.'-proposal.pdf');
@@ -430,9 +427,7 @@ class QuoteController extends Controller
                     'project_name',
                     'payment_terms',
                     'scope',
-                    'terms_conditions',
                     'special_conditions',
-                    'terms',
                 ]),
                 'doc_no' => $this->generateDocNo(),
                 'issue_date' => now()->toDateString(),

@@ -131,9 +131,9 @@
                                     <th class="px-3 py-2.5">{{ __('Qty') }}</th>
                                     <th class="px-3 py-2.5">{{ __('Basis') }}</th>
                                     <th class="px-3 py-2.5">{{ __('Rate') }}</th>
-                                    <th class="px-3 py-2.5">{{ __('Monthly') }}</th>
-                                    <th class="px-3 py-2.5">{{ __('Days') }}</th>
-                                    <th class="px-3 py-2.5">{{ __('Months') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Monthly Rate') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Duration (Days)') }}</th>
+                                    <th class="px-3 py-2.5">{{ __('Duration (Months)') }}</th>
                                     <th class="px-3 py-2.5">{{ __('Manual') }}</th>
                                     <th class="px-3 py-2.5">{{ __('OT') }}</th>
                                     <th class="px-3 py-2.5">{{ __('Mob') }}</th>
@@ -208,19 +208,7 @@
                     </flux:select>
                     <flux:textarea name="scope" label="Scope of Services" placeholder="Describe services included in this quote..." rows="6">{{ old('scope', $quote->scope) }}</flux:textarea>
 
-                    <flux:separator />
-
-                    <flux:heading size="sm">{{ __('Terms & conditions') }}</flux:heading>
-                    <flux:textarea name="terms_conditions" label="General Terms & Conditions" placeholder="Enter general terms and conditions..." rows="4">{{ old('terms_conditions', $quote->terms_conditions) }}</flux:textarea>
                     <flux:textarea name="special_conditions" label="Special Conditions" placeholder="Add any special conditions (optional)..." rows="3">{{ old('special_conditions', $quote->special_conditions) }}</flux:textarea>
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <flux:textarea name="terms[mobilization_replacement]" label="Mobilization / Replacement" placeholder="Add mobilization and replacement terms..." rows="4">{{ old('terms.mobilization_replacement', 'OMS will provide qualified replacements within 48 hours of notification. Mobilization costs are for the client account unless otherwise agreed.') }}</flux:textarea>
-                        <flux:textarea name="terms[invoicing_payment]" label="Invoicing & Payment" placeholder="Define invoicing and payment conditions..." rows="4">{{ old('terms.invoicing_payment', 'Invoices will be raised monthly based on approved timesheets. Payment is due within the agreed payment terms from invoice date.') }}</flux:textarea>
-                        <flux:textarea name="terms[accommodation_transport]" label="Accommodation / Transport" placeholder="Specify accommodation and transport responsibilities..." rows="4">{{ old('terms.accommodation_transport', 'Accommodation, meals, and transport from port to vessel/site are for the client account unless otherwise stated in this agreement.') }}</flux:textarea>
-                        <flux:textarea name="terms[medical_certification]" label="Medical / Certification" placeholder="Specify medical and certification requirements..." rows="4">{{ old('terms.medical_certification', 'All crew will hold valid STCW, MLC, and role-specific certifications. Medical fitness will comply with ENG1 or equivalent standards.') }}</flux:textarea>
-                        <flux:textarea name="terms[termination]" label="Termination" placeholder="Define termination notice and conditions..." rows="4">{{ old('terms.termination', 'Either party may terminate this agreement with 30 days written notice. Immediate termination applies in cases of gross misconduct or safety breach.') }}</flux:textarea>
-                        <flux:textarea name="terms[governing_law]" label="Governing Law" placeholder="Specify governing law and dispute resolution..." rows="4">{{ old('terms.governing_law', 'This agreement shall be governed by the laws of the United Arab Emirates. Disputes shall be resolved through arbitration in Abu Dhabi, UAE.') }}</flux:textarea>
-                    </div>
                 </fieldset>
 
                 <div class="flex items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/70 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900/50 sm:px-6">

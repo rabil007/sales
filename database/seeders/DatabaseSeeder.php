@@ -95,9 +95,7 @@ class DatabaseSeeder extends Seeder
             'project_name' => 'Melody Crew Requirements',
             'payment_terms' => '30 days from invoice',
             'scope' => 'Source and supply of deck and bridge crew under OMS payroll and client secondment model.',
-            'terms_conditions' => 'Rates are VAT exclusive. Monthly invoices are due before the 20th of each month.',
             'special_conditions' => 'Client to provide LOA for gate pass processing.',
-            'terms' => ['mobilization' => 'Included', 'demobilization' => 'Included'],
             'total_amount' => 49600.00,
         ]);
 
@@ -156,9 +154,7 @@ class DatabaseSeeder extends Seeder
             'project_name' => 'Port Crew Rotation',
             'payment_terms' => '45 days from invoice',
             'scope' => 'Monthly crew supply for marine terminal support, transport arranged by client.',
-            'terms_conditions' => 'Client validates attendance sheet by month-end.',
             'special_conditions' => null,
-            'terms' => ['insurance' => 'Supplier scope', 'visa' => 'Supplier scope'],
             'total_amount' => 47600.00,
         ]);
 
@@ -217,9 +213,7 @@ class DatabaseSeeder extends Seeder
             'project_name' => 'Offshore Campaign Crew',
             'payment_terms' => '30 days from invoice',
             'scope' => 'Crew mobilization proposal pending final line-up.',
-            'terms_conditions' => null,
             'special_conditions' => null,
-            'terms' => ['status' => 'Awaiting client confirmation'],
             'total_amount' => 0,
         ]);
     }

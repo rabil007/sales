@@ -27,9 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'scope',
     'duration_text',
     'project_name',
-    'terms_conditions',
     'special_conditions',
-    'terms',
     'renewed_from_expiry_date',
     'total_amount',
 ])]
@@ -49,7 +47,6 @@ class Quote extends Model
             'start_date' => 'date',
             'end_date' => 'date',
             'renewed_from_expiry_date' => 'date',
-            'terms' => 'array',
             'total_amount' => 'decimal:2',
         ];
     }
