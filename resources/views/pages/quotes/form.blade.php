@@ -214,15 +214,13 @@
                 <div class="flex items-center justify-between gap-3 border-t border-zinc-200/60 bg-white/40 px-4 py-4 dark:border-zinc-700/60 dark:bg-zinc-900/40 sm:px-6">
                     <flux:button type="button" variant="ghost" icon="arrow-left" id="tab-prev-button">{{ __('Back') }}</flux:button>
                     <p class="text-center text-xs tabular-nums text-zinc-500" id="tab-step-indicator"></p>
-                    <flux:button type="button" variant="primary" icon-trailing="arrow-right" id="tab-next-button">{{ __('Next') }}</flux:button>
+                    <div class="flex items-center gap-2">
+                        <flux:button variant="primary" type="submit" icon="check" id="tab-submit-button" class="hidden" :disabled="$isLocked">
+                            {{ $isEdit ? __('Update quote') : __('Save quote') }}
+                        </flux:button>
+                        <flux:button type="button" variant="primary" icon-trailing="arrow-right" id="tab-next-button">{{ __('Next') }}</flux:button>
+                    </div>
                 </div>
-            </div>
-
-            {{-- Sticky Action Bar --}}
-            <div class="sticky bottom-0 z-10 mt-px flex justify-end rounded-b-3xl border border-t-0 border-zinc-200/60 bg-white/80 px-4 py-5 backdrop-blur-xl sm:px-6 dark:border-zinc-700/60 dark:bg-zinc-900/80 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                <flux:button variant="primary" type="submit" icon="check" :disabled="$isLocked">
-                    {{ $isEdit ? __('Update quote') : __('Save quote') }}
-                </flux:button>
             </div>
         </form>
     </div>
@@ -234,6 +232,7 @@
             const tabContents = document.querySelectorAll('[data-tab-content]');
             const tabPrevButton = document.getElementById('tab-prev-button');
             const tabNextButton = document.getElementById('tab-next-button');
+            const tabSubmitButton = document.getElementById('tab-submit-button');
             const tabStepIndicator = document.getElementById('tab-step-indicator');
             const clientNameSelect = document.getElementById('client-name-select');
             const clientIdInput = document.getElementById('client-id-input');
@@ -263,6 +262,9 @@
 
                 tabPrevButton.classList.toggle('invisible', isFirst);
                 tabNextButton.classList.toggle('invisible', isLast);
+                if (tabSubmitButton instanceof HTMLElement) {
+                    tabSubmitButton.classList.toggle('hidden', !isLast);
+                }
                 tabStepIndicator.textContent = `Step ${currentIndex + 1} of ${tabs.length}`;
             }
 
