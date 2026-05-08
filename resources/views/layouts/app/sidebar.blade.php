@@ -3,8 +3,8 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+    <body class="min-h-screen bg-zinc-50/50 antialiased dark:bg-linear-to-br dark:from-zinc-900 dark:to-zinc-950">
+        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200/60 bg-white/60 shadow-[4px_0_24px_rgb(0,0,0,0.02)] backdrop-blur-2xl dark:border-zinc-700/60 dark:bg-zinc-900/60">
             <flux:sidebar.header>
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
@@ -40,7 +40,7 @@
         </flux:sidebar>
 
         <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden">
+        <flux:header class="lg:hidden border-b border-zinc-200/60 bg-white/60 backdrop-blur-xl dark:border-zinc-700/60 dark:bg-zinc-900/60">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
