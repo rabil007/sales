@@ -114,8 +114,15 @@ jobs:
 
           composer install --no-dev --no-interaction --no-progress --optimize-autoloader
 
+          if [ ! -f ".env" ]; then
+            echo "Missing .env on server at ${DEPLOY_PATH}. Create it before deploy."
+            exit 1
+          fi
+
           php artisan storage:link || true
-          php artisan optimize:clear
+          php artisan config:clear || true
+          php artisan route:clear || true
+          php artisan view:clear || true
           php artisan migrate --force
 
           php artisan config:cache
