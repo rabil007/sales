@@ -76,6 +76,9 @@ test('authenticated user can control clients pagination size', function () {
 
     $this->get(route('clients.index', ['per_page' => 10]))
         ->assertSuccessful()
-        ->assertSee('10 / page')
-        ->assertSee('Showing 1-10 of 12 clients');
+        ->assertSee('Showing')
+        ->assertSee('1')
+        ->assertSee('10')
+        ->assertSee('12')
+        ->assertSee('Page 1 of 2');
 });

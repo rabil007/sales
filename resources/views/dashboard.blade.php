@@ -92,13 +92,37 @@
             
             <div class="group relative overflow-hidden rounded-3xl border border-zinc-200/60 bg-white/60 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:shadow-md dark:border-zinc-700/60 dark:bg-zinc-900/60">
                 <div class="absolute -bottom-10 -right-10 z-0 h-40 w-40 rounded-full bg-indigo-500/5 blur-3xl transition-all duration-500 group-hover:scale-125 dark:bg-indigo-400/5"></div>
-                <div class="relative z-10">
+                <div class="relative z-10 flex h-full flex-col">
                     <p class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Status Mix</p>
-                    <div class="mt-4 flex flex-wrap gap-2.5">
-                        <flux:badge color="zinc" class="px-2.5 py-1 text-xs shadow-sm">Draft: {{ $draftCount }}</flux:badge>
-                        <flux:badge color="blue" class="px-2.5 py-1 text-xs shadow-sm">Sent: {{ $sentCount }}</flux:badge>
-                        <flux:badge color="lime" class="px-2.5 py-1 text-xs shadow-sm">Approved: {{ $approvedCount }}</flux:badge>
-                        <flux:badge color="red" class="px-2.5 py-1 text-xs shadow-sm">Expired: {{ $expiredCount }}</flux:badge>
+                    <div class="mt-4 flex flex-1 flex-col justify-between space-y-3">
+                        <div class="flex items-center justify-between rounded-xl p-1 transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                            <div class="flex items-center gap-2.5">
+                                <div class="h-2 w-2 rounded-full bg-zinc-400 shadow-[0_0_8px_rgba(161,161,170,0.6)]"></div>
+                                <span class="text-sm font-medium text-zinc-600 dark:text-zinc-300">Draft</span>
+                            </div>
+                            <span class="text-base font-semibold tabular-nums text-zinc-900 dark:text-white">{{ $draftCount }}</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-xl p-1 transition-colors hover:bg-blue-50/50 dark:hover:bg-blue-900/10">
+                            <div class="flex items-center gap-2.5">
+                                <div class="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]"></div>
+                                <span class="text-sm font-medium text-zinc-600 dark:text-zinc-300">Sent</span>
+                            </div>
+                            <span class="text-base font-semibold tabular-nums text-zinc-900 dark:text-white">{{ $sentCount }}</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-xl p-1 transition-colors hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10">
+                            <div class="flex items-center gap-2.5">
+                                <div class="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+                                <span class="text-sm font-medium text-zinc-600 dark:text-zinc-300">Approved</span>
+                            </div>
+                            <span class="text-base font-semibold tabular-nums text-zinc-900 dark:text-white">{{ $approvedCount }}</span>
+                        </div>
+                        <div class="flex items-center justify-between rounded-xl p-1 transition-colors hover:bg-rose-50/50 dark:hover:bg-rose-900/10">
+                            <div class="flex items-center gap-2.5">
+                                <div class="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></div>
+                                <span class="text-sm font-medium text-zinc-600 dark:text-zinc-300">Expired</span>
+                            </div>
+                            <span class="text-base font-semibold tabular-nums text-zinc-900 dark:text-white">{{ $expiredCount }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
