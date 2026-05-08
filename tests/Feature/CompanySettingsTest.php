@@ -3,11 +3,8 @@
 use App\Models\CompanySetting;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 test('user can update application name and logo from template settings', function () {
-    Storage::fake('public');
-
     CompanySetting::query()->updateOrCreate(
         ['key' => 'app_name'],
         ['label' => 'Application Name', 'group' => 'application', 'value' => 'OMS Sales'],
@@ -31,7 +28,7 @@ test('user can update application name and logo from template settings', functio
     expect(CompanySetting::get('app_name'))->toBe('OMS Ops Hub');
     $logoPath = CompanySetting::get('app_logo_path');
     expect($logoPath)->toStartWith('app-branding/');
-    expect(Storage::disk('public')->exists($logoPath))->toBeTrue();
+    expect(is_file(public_path('uploads/'.$logoPath)))->toBeTrue();
 });
 
 test('company template settings reject unknown or forged keys', function () {

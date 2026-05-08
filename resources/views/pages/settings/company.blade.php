@@ -47,7 +47,7 @@
                                 class="group flex w-full items-center gap-4 rounded-2xl border border-zinc-200/60 bg-white/40 p-3 text-left transition-all hover:bg-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-zinc-600/50 dark:bg-zinc-800/40 dark:hover:bg-zinc-800/80"
                             >
                                 <div class="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-zinc-200/50 bg-white shadow-sm transition-transform group-hover:scale-105 dark:border-zinc-700/50 dark:bg-zinc-800">
-                                    <img src="{{ asset('storage/'.($appLogoSetting->value ?? 'overseas-marine logo.png')) }}" alt="{{ __('Application logo preview') }}" class="size-10 object-contain drop-shadow-sm" />
+                                    <img src="{{ \App\Models\CompanySetting::logoUrl() }}" alt="{{ __('Application logo preview') }}" class="size-10 object-contain drop-shadow-sm" />
                                 </div>
                                 <div class="min-w-0 text-sm text-zinc-500">
                                     <p class="font-medium text-zinc-700 transition-colors group-hover:text-blue-600 dark:text-zinc-300 dark:group-hover:text-blue-400">{{ __('Change application logo') }}</p>

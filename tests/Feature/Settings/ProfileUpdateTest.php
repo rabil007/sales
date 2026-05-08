@@ -4,7 +4,6 @@ use App\Models\CompanySetting;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 test('profile page is displayed', function () {
@@ -48,8 +47,6 @@ test('email verification status is unchanged when email address is unchanged', f
 });
 
 test('application name and logo can be updated from company template settings', function () {
-    Storage::fake('public');
-
     CompanySetting::query()->updateOrCreate(
         ['key' => 'app_name'],
         ['label' => 'Application Name', 'group' => 'application', 'value' => 'OMS Sales'],
@@ -71,7 +68,7 @@ test('application name and logo can be updated from company template settings', 
     expect(CompanySetting::get('app_name'))->toBe('Sales Control');
     $logoPath = CompanySetting::get('app_logo_path');
     expect($logoPath)->toStartWith('app-branding/')
-        ->and(Storage::disk('public')->exists($logoPath))->toBeTrue();
+        ->and(is_file(public_path('uploads/'.$logoPath)))->toBeTrue();
 });
 
 test('user can delete their account', function () {

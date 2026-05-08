@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateCompanySettingsRequest;
 use App\Models\CompanySetting;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CompanySettingController extends Controller
@@ -29,10 +31,22 @@ class CompanySettingController extends Controller
 
         if ($request->hasFile('app_logo')) {
             $currentLogoPath = CompanySetting::get('app_logo_path', 'overseas-marine logo.png');
-            $newLogoPath = $request->file('app_logo')->store('app-branding', 'public');
+            $uploadDirectory = public_path('uploads/app-branding');
+            File::ensureDirectoryExists($uploadDirectory);
+
+            $uploadedFile = $request->file('app_logo');
+            $newFileName = Str::uuid()->toString().'.'.$uploadedFile->getClientOriginalExtension();
+            $uploadedFile->move($uploadDirectory, $newFileName);
+            $newLogoPath = 'app-branding/'.$newFileName;
 
             if ($currentLogoPath !== '' && $currentLogoPath !== 'overseas-marine logo.png' && Storage::disk('public')->exists($currentLogoPath)) {
                 Storage::disk('public')->delete($currentLogoPath);
+            }
+            if ($currentLogoPath !== '' && $currentLogoPath !== 'overseas-marine logo.png' && str_starts_with($currentLogoPath, 'app-branding/')) {
+                $previousPublicUpload = public_path('uploads/'.$currentLogoPath);
+                if (is_file($previousPublicUpload)) {
+                    @unlink($previousPublicUpload);
+                }
             }
 
             $settingsInput['app_logo_path'] = $newLogoPath;

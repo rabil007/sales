@@ -14,7 +14,7 @@
             
             <div class="mb-8 flex flex-col items-center text-center">
                 <div class="relative mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-zinc-200/50 transition-transform duration-500 hover:scale-105 dark:bg-zinc-800 dark:ring-zinc-700/50">
-                    <img src="{{ asset('storage/'.\App\Models\CompanySetting::get('app_logo_path', 'overseas-marine logo.png')) }}" alt="{{ $appName }} logo" class="size-10 object-contain drop-shadow-sm">
+                    <img src="{{ \App\Models\CompanySetting::logoUrl() }}" alt="{{ $appName }} logo" class="size-10 object-contain drop-shadow-sm">
                 </div>
                 <p class="mb-2 bg-gradient-to-br from-zinc-700 to-zinc-900 bg-clip-text text-xs font-bold uppercase tracking-[0.2em] text-transparent dark:from-zinc-100 dark:to-zinc-400">{{ $appName }}</p>
                 <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ __('Welcome Back') }}</h1>

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['key', 'value', 'label', 'group'])]
 class CompanySetting extends Model
 {
+    private const DEFAULT_LOGO = 'overseas-marine logo.png';
+
     /**
      * Allowed keys when updating settings through the authenticated settings form.
      * Prevents arbitrary key injection via crafted POST payloads.
@@ -51,5 +53,32 @@ class CompanySetting extends Model
     public static function allKeyed(): array
     {
         return static::query()->pluck('value', 'key')->map(fn ($v) => (string) $v)->all();
+    }
+
+    public static function logoPath(): string
+    {
+        return self::get('app_logo_path', self::DEFAULT_LOGO);
+    }
+
+    public static function logoUrl(): string
+    {
+        $path = self::logoPath();
+
+        if (str_starts_with($path, 'app-branding/')) {
+            return asset('uploads/'.$path);
+        }
+
+        return asset('storage/'.$path);
+    }
+
+    public static function logoAbsolutePath(): ?string
+    {
+        $path = self::logoPath();
+
+        $absolutePath = str_starts_with($path, 'app-branding/')
+            ? public_path('uploads/'.$path)
+            : storage_path('app/public/'.$path);
+
+        return is_file($absolutePath) ? $absolutePath : null;
     }
 }

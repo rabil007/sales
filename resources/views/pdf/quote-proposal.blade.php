@@ -79,10 +79,9 @@
         $cs = \App\Models\CompanySetting::allKeyed();
 
         // ── Logo ────────────────────────────────────────────────────
-        $appLogoPath = $cs['app_logo_path'] ?? 'overseas-marine logo.png';
-        $logoAbsolutePath = storage_path('app/public/'.$appLogoPath);
+        $logoAbsolutePath = \App\Models\CompanySetting::logoAbsolutePath();
         $logoDataUri = null;
-        if (is_file($logoAbsolutePath)) {
+        if (is_string($logoAbsolutePath) && is_file($logoAbsolutePath)) {
             $logoDataUri = 'data:image/png;base64,'.base64_encode((string) file_get_contents($logoAbsolutePath));
         }
         $companyName      = $cs['company_name']       ?? 'Overseas Marine Services';

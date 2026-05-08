@@ -1,6 +1,6 @@
 @php
     $appName = \App\Models\CompanySetting::get('app_name', config('app.name', 'OMS Sales'));
-    $appLogoPath = \App\Models\CompanySetting::get('app_logo_path', 'overseas-marine logo.png');
+    $appLogoUrl = \App\Models\CompanySetting::logoUrl();
 @endphp
 
 <meta charset="utf-8" />
@@ -10,9 +10,9 @@
     {{ filled($title ?? null) ? $title.' - '.$appName : $appName }}
 </title>
 
-<link rel="icon" href="{{ asset('storage/'.$appLogoPath) }}" sizes="32x32" type="image/png">
-<link rel="icon" href="{{ asset('storage/'.$appLogoPath) }}" sizes="192x192" type="image/png">
-<link rel="apple-touch-icon" href="{{ asset('storage/'.$appLogoPath) }}">
+<link rel="icon" href="{{ $appLogoUrl }}" sizes="32x32" type="image/png">
+<link rel="icon" href="{{ $appLogoUrl }}" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="{{ $appLogoUrl }}">
 
 @fonts
 
