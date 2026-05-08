@@ -57,7 +57,7 @@
                 </div>
 
                 {{-- Tab: Quote Details --}}
-                <fieldset data-tab-content="details" class="tab-content p-6 space-y-6" @disabled($isLocked)>
+                <fieldset data-tab-content="details" class="tab-content min-w-0 p-6 space-y-6" @disabled($isLocked)>
                     {{-- Document Info --}}
                     <div>
                         <flux:heading size="sm" class="mb-4">{{ __('Document details') }}</flux:heading>
@@ -110,7 +110,7 @@
                 </fieldset>
 
                 {{-- Tab: Crew Lines --}}
-                <fieldset data-tab-content="crew" class="tab-content hidden space-y-4 p-6" @disabled($isLocked)>
+                <fieldset data-tab-content="crew" class="tab-content hidden min-w-0 space-y-4 p-6" @disabled($isLocked)>
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div class="min-w-0 space-y-1">
                             <flux:heading size="sm">{{ __('Crew lines') }}</flux:heading>
@@ -123,7 +123,7 @@
                         {{ __('Day: qty × daily rate × days. Month: qty × monthly rate × months. Fixed: use Manual total (rate column is unused for that row). Totals update when you save.') }}
                     </flux:callout>
 
-                    <div class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+                    <div class="max-h-[60vh] w-full overflow-auto rounded-lg border border-zinc-200 dark:border-zinc-700 sm:max-h-none">
                         <table class="min-w-full text-sm" id="crew-lines-table">
                             <thead class="sticky top-0 z-10 bg-zinc-50 shadow-sm dark:bg-zinc-800/95">
                                 <tr class="text-left text-xs uppercase tracking-wide text-zinc-500">
@@ -201,7 +201,7 @@
                 </fieldset>
 
                 {{-- Tab: Terms --}}
-                <fieldset data-tab-content="terms" class="tab-content hidden p-6 space-y-4" @disabled($isLocked)>
+                <fieldset data-tab-content="terms" class="tab-content hidden min-w-0 p-6 space-y-4" @disabled($isLocked)>
                     <flux:select name="payment_terms" label="Payment Terms">
                         @foreach (['30 days from invoice', '45 days from invoice', '60 days from invoice', 'Advance payment', '50% advance, 50% on completion'] as $termsOption)
                             <option value="{{ $termsOption }}" @selected(old('payment_terms', $quote->payment_terms) === $termsOption)>{{ $termsOption }}</option>
