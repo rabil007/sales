@@ -28,7 +28,7 @@
             @endif
             <input type="hidden" name="client_id" id="client-id-input" value="{{ old('client_id', $quote->client_id) }}">
 
-            <div class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs dark:border-zinc-700 dark:bg-zinc-900">
+            <div class="overflow-hidden rounded-3xl border border-zinc-200/60 bg-white/60 shadow-sm backdrop-blur-xl dark:border-zinc-700/60 dark:bg-zinc-900/60">
                 @if ($isLocked)
                     <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
                         <flux:callout color="amber" icon="lock-closed">
@@ -37,7 +37,7 @@
                     </div>
                 @endif
                 {{-- Tab Navigation --}}
-                <div class="overflow-x-auto border-b border-zinc-200 bg-zinc-50/80 dark:border-zinc-700 dark:bg-zinc-900/80">
+                <div class="overflow-x-auto border-b border-zinc-200/60 bg-white/40 dark:border-zinc-700/60 dark:bg-zinc-900/40">
                     <div class="flex min-w-min gap-1 px-2 pt-2 sm:px-4 text-sm">
                         <button type="button" data-tab-button="details" aria-selected="true" class="tab-button inline-flex shrink-0 items-center gap-2 rounded-t-md px-3 py-2.5 font-medium transition-colors sm:px-4">
                             <flux:icon.document-text class="size-4 opacity-70" />
@@ -122,9 +122,9 @@
                         {{ __('Day: qty × daily rate × days. Month: qty × monthly rate × months. Fixed: use Manual total (rate column is unused for that row). Totals update when you save.') }}
                     </flux:callout>
 
-                    <div class="max-h-[60vh] w-full overflow-auto rounded-lg border border-zinc-200 dark:border-zinc-700 sm:max-h-none">
+                    <div class="max-h-[60vh] w-full overflow-auto rounded-xl border border-zinc-200/60 dark:border-zinc-700/60 sm:max-h-none">
                         <table class="min-w-full text-sm" id="crew-lines-table">
-                            <thead class="sticky top-0 z-10 bg-zinc-50 shadow-sm dark:bg-zinc-800/95">
+                            <thead class="sticky top-0 z-10 bg-white/80 shadow-sm backdrop-blur-md dark:bg-zinc-800/80">
                                 <tr class="text-left text-xs uppercase tracking-wide text-zinc-500">
                                     <th class="px-3 py-2.5">{{ __('Rank') }}</th>
                                     <th class="px-3 py-2.5">{{ __('Category') }}</th>
@@ -152,7 +152,7 @@
                                         $basisRaw = $line['basis'] ?? 'Day';
                                         $basisValue = in_array($basisRaw, ['Day', 'Month', 'Fixed'], true) ? $basisRaw : 'Day';
                                     @endphp
-                                    <tr class="border-t border-zinc-200 dark:border-zinc-700">
+                                    <tr class="border-t border-zinc-200/60 dark:border-zinc-700/60">
                                         <td class="p-2">
                                             <select class="h-9 w-full min-w-[140px] rounded-md border border-zinc-300 px-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100" name="crew_lines[{{ $index }}][rank]" data-rank-select>
                                                 <option value="">{{ __('Select rank') }}</option>
@@ -211,7 +211,7 @@
                     <flux:textarea name="special_conditions" label="Special Conditions" placeholder="Add any special conditions (optional)..." rows="3">{{ old('special_conditions', $quote->special_conditions) }}</flux:textarea>
                 </fieldset>
 
-                <div class="flex items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50/70 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900/50 sm:px-6">
+                <div class="flex items-center justify-between gap-3 border-t border-zinc-200/60 bg-white/40 px-4 py-4 dark:border-zinc-700/60 dark:bg-zinc-900/40 sm:px-6">
                     <flux:button type="button" variant="ghost" icon="arrow-left" id="tab-prev-button">{{ __('Back') }}</flux:button>
                     <p class="text-center text-xs tabular-nums text-zinc-500" id="tab-step-indicator"></p>
                     <flux:button type="button" variant="primary" icon-trailing="arrow-right" id="tab-next-button">{{ __('Next') }}</flux:button>
@@ -219,7 +219,7 @@
             </div>
 
             {{-- Sticky Action Bar --}}
-            <div class="sticky bottom-0 z-10 mt-px flex justify-end rounded-b-xl border border-t-0 border-zinc-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-6 dark:border-zinc-700 dark:bg-zinc-900/95">
+            <div class="sticky bottom-0 z-10 mt-px flex justify-end rounded-b-3xl border border-t-0 border-zinc-200/60 bg-white/80 px-4 py-5 backdrop-blur-xl sm:px-6 dark:border-zinc-700/60 dark:bg-zinc-900/80 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                 <flux:button variant="primary" type="submit" icon="check" :disabled="$isLocked">
                     {{ $isEdit ? __('Update quote') : __('Save quote') }}
                 </flux:button>
