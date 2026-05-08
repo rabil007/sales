@@ -105,7 +105,8 @@ jobs:
           cd "${DEPLOY_PATH}"
 
           if [ ! -d ".git" ]; then
-            git clone https://github.com/${GITHUB_REPOSITORY}.git .
+            git init
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           fi
 
           git fetch --all --prune
