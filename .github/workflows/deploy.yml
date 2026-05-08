@@ -1,0 +1,116 @@
+name: Full Deploy (Laravel + Livewire)
+
+# Required repository secrets:
+# SSH_PRIVATE_KEY, DEPLOY_HOST, DEPLOY_PORT, DEPLOY_USER, DEPLOY_PATH
+# FLUX_USERNAME, FLUX_LICENSE_KEY (required if private Flux packages are used)
+#
+# Use an absolute DEPLOY_PATH on the server.
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+      DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          tools: composer:v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ steps.composer-cache.outputs.dir }}
+            vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Configure Flux Composer auth
+        run: composer config http-basic.composer.fluxui.dev "${{ secrets.FLUX_USERNAME }}" "${{ secrets.FLUX_LICENSE_KEY }}"
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist --no-dev --optimize-autoloader
+
+      - name: Prepare application environment for build
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Cache Vite build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.vite
+            public/build
+          key: ${{ runner.os }}-vite-${{ hashFiles('package-lock.json', 'vite.config.js', 'resources/js/**', 'resources/css/**') }}
+          restore-keys: |
+            ${{ runner.os }}-vite-
+
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${DEPLOY_PORT}" "${DEPLOY_HOST}" >> ~/.ssh/known_hosts
+
+      - name: Upload Vite build to server
+        run: |
+          rsync -avz --delete -e "ssh -i ~/.ssh/id_ed25519 -p ${DEPLOY_PORT}" public/build/ \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/public/build/"
+
+      - name: Deploy backend
+        run: |
+          ssh -i ~/.ssh/id_ed25519 -p "${DEPLOY_PORT}" "${DEPLOY_USER}@${DEPLOY_HOST}" bash -s <<REMOTE
+          set -euo pipefail
+          cd "${DEPLOY_PATH}"
+
+          git fetch --all --prune
+          git checkout main
+          git pull origin main
+
+          composer install --no-dev --no-interaction --no-progress --optimize-autoloader
+
+          php artisan storage:link || true
+          php artisan optimize:clear
+          php artisan migrate --force
+
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          php artisan queue:restart || true
+          REMOTE
