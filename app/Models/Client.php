@@ -21,4 +21,12 @@ class Client extends Model
     {
         return $this->hasMany(Quote::class);
     }
+
+    /**
+     * @return HasMany<ClientAgreement, $this>
+     */
+    public function agreements(): HasMany
+    {
+        return $this->hasMany(ClientAgreement::class);
+    }
 }

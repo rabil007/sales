@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ClientAgreementController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanySettingController;
 use App\Http\Controllers\QuoteController;
@@ -20,6 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('quotes/{quote}/expire', [QuoteController::class, 'expire'])->name('quotes.expire');
     Route::post('quotes/{quote}/renew', [QuoteController::class, 'renew'])->name('quotes.renew');
     Route::resource('clients', ClientController::class)->except('show');
+    Route::resource('client-agreements', ClientAgreementController::class)->except('show');
     Route::resource('ranks', RankController::class)->except('show');
     Route::patch('ranks/{rank}/toggle-status', [RankController::class, 'toggleStatus'])->name('ranks.toggle-status');
     Route::get('settings/company', [CompanySettingController::class, 'edit'])->name('settings.company.edit');

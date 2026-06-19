@@ -21,6 +21,9 @@
                     <flux:sidebar.item icon="building-office-2" :href="route('clients.index')" :current="request()->routeIs('clients.*')" wire:navigate>
                         {{ __('Clients') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="clipboard-document-list" :href="route('client-agreements.index')" :current="request()->routeIs('client-agreements.*')" wire:navigate>
+                        {{ __('Client Agreements') }}
+                    </flux:sidebar.item>
                     <flux:sidebar.item icon="user-group" :href="route('ranks.index')" :current="request()->routeIs('ranks.*')" wire:navigate>
                         {{ __('Ranks') }}
                     </flux:sidebar.item>
