@@ -60,18 +60,6 @@
 @endphp
 
 <div class="space-y-6">
-    <div class="px-1 in-data-flux-sidebar-collapsed-desktop:hidden">
-        <flux:button
-            variant="primary"
-            icon="plus"
-            :href="route('quotes.create')"
-            wire:navigate
-            class="app-sidebar-cta w-full rounded-xl shadow-lg shadow-blue-500/20 transition-transform hover:-translate-y-0.5"
-        >
-            {{ __('New Quote') }}
-        </flux:button>
-    </div>
-
     @foreach ($groups as $group)
         <flux:sidebar.group :heading="$group['heading']" class="app-sidebar-group grid gap-1">
             @foreach ($group['items'] as $item)
