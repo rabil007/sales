@@ -4,7 +4,33 @@ use App\Models\Client;
 use App\Models\ClientAgreement;
 use App\Models\User;
 use App\Support\ClientAgreements\ClientAgreementExportQuery;
+use App\Support\ClientAgreements\ClientAgreementSpreadsheetColumns;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+/**
+ * @param  array<int, array<int, mixed>>  $rows
+ */
+function makeClientAgreementImportFile(array $rows): UploadedFile
+{
+    $spreadsheet = new Spreadsheet;
+    $sheet = $spreadsheet->getActiveSheet();
+
+    foreach (ClientAgreementSpreadsheetColumns::IMPORT_HEADERS as $columnIndex => $header) {
+        $sheet->getCell([$columnIndex + 1, 1])->setValue($header);
+    }
+
+    foreach ($rows as $rowIndex => $row) {
+        $sheet->fromArray($row, null, 'A'.($rowIndex + 2));
+    }
+
+    $path = tempnam(sys_get_temp_dir(), 'client-agreement-import-').'.xlsx';
+    (new Xlsx($spreadsheet))->save($path);
+
+    return new UploadedFile($path, 'client-agreements-import.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', null, true);
+}
 
 test('authenticated user can manage client agreements', function () {
     $this->actingAs(User::factory()->create());
@@ -240,4 +266,112 @@ test('client agreement export query respects list filters', function () {
 
     expect($results)->toHaveCount(1)
         ->and($results->first()->agreement_ref)->toBe('OMS-AGR-2026-201');
+});
+
+test('authenticated user can download client agreement import template', function () {
+    $this->actingAs(User::factory()->create());
+
+    $response = $this->get(route('client-agreements.import.template'));
+
+    $response->assertOk();
+    expect($response->headers->get('content-type'))->toContain('spreadsheetml.sheet');
+    expect($response->headers->get('content-disposition'))->toContain('client-agreements-import-template.xlsx');
+});
+
+test('authenticated user can import valid client agreements from excel', function () {
+    $this->actingAs(User::factory()->create());
+
+    Client::query()->create([
+        'name' => 'ADNOC Offshore',
+        'email' => 'ops@adnoc.test',
+        'phone' => '+971500000001',
+        'company' => 'ADNOC',
+    ]);
+
+    $file = makeClientAgreementImportFile([
+        ['ADNOC Offshore', 'OMS-AGR-2026-301', 'Imported agreement.', 30, '2026-06-01', 12500],
+    ]);
+
+    $response = $this->post(route('client-agreements.import'), ['file' => $file]);
+
+    $response->assertRedirect(route('client-agreements.index', absolute: false));
+    $response->assertSessionHas('status');
+
+    $agreement = ClientAgreement::query()->firstOrFail();
+
+    expect($agreement->agreement_ref)->toBe('OMS-AGR-2026-301')
+        ->and($agreement->start_date->toDateString())->toBe('2026-06-01')
+        ->and($agreement->end_date->toDateString())->toBe('2026-06-30')
+        ->and((float) $agreement->monthly_invoice_value)->toBe(12500.0);
+});
+
+test('client agreement import skips invalid rows and imports valid ones', function () {
+    $this->actingAs(User::factory()->create());
+
+    Client::query()->create([
+        'name' => 'ADNOC Offshore',
+        'email' => 'ops@adnoc.test',
+        'phone' => '+971500000001',
+        'company' => 'ADNOC',
+    ]);
+
+    $file = makeClientAgreementImportFile([
+        ['Unknown Client', 'OMS-AGR-2026-302', 'Should fail.', 30, '2026-06-01', 5000],
+        ['ADNOC Offshore', 'OMS-AGR-2026-303', 'Should import.', 30, '2026-06-01', 8000],
+    ]);
+
+    $response = $this->post(route('client-agreements.import'), ['file' => $file]);
+
+    $response->assertRedirect(route('client-agreements.index', absolute: false));
+    $response->assertSessionHas('status');
+    $response->assertSessionHas('import_errors');
+
+    expect(ClientAgreement::query()->count())->toBe(1);
+    expect(ClientAgreement::query()->value('agreement_ref'))->toBe('OMS-AGR-2026-303');
+    expect(session('import_errors'))->toContain('Row 2: Client "Unknown Client" not found.');
+});
+
+test('client agreement import rejects duplicate agreement refs', function () {
+    $this->actingAs(User::factory()->create());
+
+    $client = Client::query()->create([
+        'name' => 'ADNOC Offshore',
+        'email' => 'ops@adnoc.test',
+        'phone' => '+971500000001',
+        'company' => 'ADNOC',
+    ]);
+
+    ClientAgreement::query()->create([
+        'client_id' => $client->id,
+        'agreement_ref' => 'OMS-AGR-2026-304',
+        'scope_of_work' => 'Existing agreement.',
+        'duration_days' => 30,
+        'start_date' => '2026-01-01',
+        'end_date' => '2026-01-30',
+        'monthly_invoice_value' => 5000,
+    ]);
+
+    $file = makeClientAgreementImportFile([
+        ['ADNOC Offshore', 'OMS-AGR-2026-304', 'Duplicate ref.', 30, '2026-06-01', 6000],
+    ]);
+
+    $response = $this->post(route('client-agreements.import'), ['file' => $file]);
+
+    $response->assertRedirect(route('client-agreements.index', absolute: false));
+    $response->assertSessionHas('error');
+    $response->assertSessionHas('import_errors');
+
+    expect(ClientAgreement::query()->count())->toBe(1);
+    expect(session('import_errors'))->toContain('Row 2: Agreement Ref. "OMS-AGR-2026-304" already exists.');
+});
+
+test('client agreement import rejects invalid file types', function () {
+    $this->actingAs(User::factory()->create());
+
+    $file = UploadedFile::fake()->create('agreements.txt', 10, 'text/plain');
+
+    $this->post(route('client-agreements.import'), ['file' => $file])
+        ->assertSessionHasErrors('file');
+
+    expect(ClientAgreement::query()->count())->toBe(0);
 });

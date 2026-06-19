@@ -1,11 +1,28 @@
 <x-layouts::app :title="__('Client Agreements')">
     <div class="space-y-8">
+        @if (session('import_errors'))
+            <flux:callout icon="exclamation-triangle" color="amber" class="rounded-2xl">
+                <div class="space-y-2">
+                    <p class="font-medium">Some rows could not be imported:</p>
+                    <ul class="list-inside list-disc space-y-1 text-sm">
+                        @foreach (session('import_errors') as $importError)
+                            <li>{{ $importError }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </flux:callout>
+        @endif
+
         <div class="flex flex-wrap items-end justify-between gap-4">
             <div>
                 <flux:heading size="xl" class="font-bold tracking-tight">Client Agreements</flux:heading>
                 <flux:text class="mt-1 text-zinc-500 dark:text-zinc-400">Track client agreements, contract periods, and monthly invoice values.</flux:text>
             </div>
             <div class="flex flex-wrap items-center gap-2">
+                <flux:modal.trigger name="import-client-agreements">
+                    <flux:button variant="ghost" icon="arrow-up-tray" class="rounded-full px-4">Import</flux:button>
+                </flux:modal.trigger>
+
                 <flux:dropdown position="bottom" align="end">
                     <flux:button variant="ghost" icon="arrow-down-tray" class="rounded-full px-4">Export</flux:button>
 
@@ -178,5 +195,91 @@
                 </div>
             </flux:modal>
         @endforeach
+
+        <flux:modal name="import-client-agreements" class="max-w-lg">
+            <form
+                method="POST"
+                action="{{ route('client-agreements.import') }}"
+                enctype="multipart/form-data"
+                class="space-y-6"
+                x-data="{
+                    dragging: false,
+                    fileName: '',
+                    setFile(file) {
+                        if (! file) {
+                            return;
+                        }
+
+                        const input = this.$refs.fileInput;
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        input.files = dataTransfer.files;
+                        this.fileName = file.name;
+                    },
+                }"
+            >
+                @csrf
+
+                <div>
+                    <flux:heading size="lg">Import Client Agreements</flux:heading>
+                    <flux:subheading>Upload an Excel file using the import template. Client names must already exist in the system.</flux:subheading>
+                </div>
+
+                <flux:callout icon="information-circle" color="blue" class="rounded-2xl">
+                    Download the template, fill in your agreement rows, then upload the `.xlsx` file. End dates are calculated automatically from start date and duration.
+                </flux:callout>
+
+                <div class="flex justify-start">
+                    <flux:button
+                        variant="ghost"
+                        icon="arrow-down-tray"
+                        :href="route('client-agreements.import.template')"
+                        class="rounded-full"
+                    >
+                        Download template
+                    </flux:button>
+                </div>
+
+                <div
+                    class="rounded-2xl border-2 border-dashed p-8 text-center transition-colors"
+                    :class="dragging ? 'border-blue-400 bg-blue-50/50 dark:border-blue-500 dark:bg-blue-950/20' : 'border-zinc-300 bg-zinc-50/50 dark:border-zinc-600 dark:bg-zinc-800/20'"
+                    @dragover.prevent="dragging = true"
+                    @dragleave.prevent="dragging = false"
+                    @drop.prevent="dragging = false; setFile($event.dataTransfer.files[0])"
+                    @click="$refs.fileInput.click()"
+                >
+                    <input
+                        x-ref="fileInput"
+                        type="file"
+                        name="file"
+                        accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        class="hidden"
+                        @change="fileName = $event.target.files[0]?.name ?? ''"
+                    />
+
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="flex size-12 items-center justify-center rounded-full bg-white shadow-sm dark:bg-zinc-800">
+                            <flux:icon.arrow-up-tray class="size-6 text-zinc-400" />
+                        </div>
+                        <div>
+                            <p class="font-medium text-zinc-700 dark:text-zinc-200">Drag and drop your Excel file here</p>
+                            <p class="mt-1 text-sm text-zinc-500">or click to browse · `.xlsx` only</p>
+                        </div>
+                        <p x-show="fileName" x-text="fileName" class="text-sm font-medium text-blue-600 dark:text-blue-400"></p>
+                    </div>
+                </div>
+
+                @error('file')
+                    <flux:text class="text-red-500">{{ $message }}</flux:text>
+                @enderror
+
+                <div class="flex justify-end gap-2">
+                    <flux:modal.close>
+                        <flux:button variant="filled" type="button" class="rounded-full">Cancel</flux:button>
+                    </flux:modal.close>
+                    <flux:button variant="primary" type="submit" icon="arrow-up-tray" class="rounded-full">Import agreements</flux:button>
+                </div>
+            </form>
+        </flux:modal>
     </div>
 </x-layouts::app>

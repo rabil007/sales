@@ -11,34 +11,23 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClientAgreementSpreadsheetExporter
 {
-    /** @var array<int, string> */
-    private const HEADERS = [
-        'Sl. No.',
-        'Client Name',
-        'Agreement Ref.',
-        'Scope of Work',
-        'Duration (days)',
-        'Start Date',
-        'End Date',
-        'Monthly Invoice Value (USD)',
-    ];
-
     public function download(Builder $query, string $filename): StreamedResponse
     {
         $agreements = $query->get();
+        $headers = ClientAgreementSpreadsheetColumns::EXPORT_HEADERS;
+        $lastColumn = chr(ord('A') + count($headers) - 1);
 
-        return response()->streamDownload(function () use ($agreements): void {
+        return response()->streamDownload(function () use ($agreements, $headers, $lastColumn): void {
             $spreadsheet = new Spreadsheet;
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Client Agreements');
 
-            foreach (self::HEADERS as $columnIndex => $header) {
-                $cell = $sheet->getCell([$columnIndex + 1, 1]);
-                $cell->setValue($header);
+            foreach ($headers as $columnIndex => $header) {
+                $sheet->getCell([$columnIndex + 1, 1])->setValue($header);
             }
 
-            $sheet->getStyle('A1:H1')->getFont()->setBold(true);
-            $sheet->getStyle('A1:H1')->getFill()
+            $sheet->getStyle("A1:{$lastColumn}1")->getFont()->setBold(true);
+            $sheet->getStyle("A1:{$lastColumn}1")->getFill()
                 ->setFillType(Fill::FILL_SOLID)
                 ->getStartColor()
                 ->setARGB('FFDBEAFE');
@@ -59,7 +48,7 @@ class ClientAgreementSpreadsheetExporter
                 ], null, "A{$row}");
             }
 
-            foreach (range('A', 'H') as $column) {
+            foreach (range('A', $lastColumn) as $column) {
                 $sheet->getColumnDimension($column)->setAutoSize(true);
             }
 

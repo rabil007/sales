@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ClientAgreementImportRequest;
 use App\Http\Requests\ClientAgreementRequest;
 use App\Models\Client;
 use App\Models\ClientAgreement;
 use App\Models\CompanySetting;
 use App\Support\ClientAgreements\ClientAgreementExportQuery;
 use App\Support\ClientAgreements\ClientAgreementSpreadsheetExporter;
+use App\Support\ClientAgreements\ClientAgreementSpreadsheetImporter;
+use App\Support\ClientAgreements\ClientAgreementSpreadsheetTemplateExporter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -74,6 +77,36 @@ class ClientAgreementController extends Controller
         ])->setPaper('a4', 'landscape');
 
         return $pdf->download('client-agreements-'.now()->format('Y-m-d').'.pdf');
+    }
+
+    public function downloadImportTemplate(ClientAgreementSpreadsheetTemplateExporter $exporter): StreamedResponse
+    {
+        $this->authorize('create', ClientAgreement::class);
+
+        return $exporter->download('client-agreements-import-template.xlsx');
+    }
+
+    public function import(ClientAgreementImportRequest $request, ClientAgreementSpreadsheetImporter $importer): RedirectResponse
+    {
+        $this->authorize('create', ClientAgreement::class);
+
+        $result = $importer->import($request->file('file'));
+
+        $redirect = redirect()->route('client-agreements.index');
+
+        if ($result->imported > 0) {
+            $redirect = $redirect->with('status', $result->toFlashMessage());
+        } elseif ($result->failed > 0) {
+            $redirect = $redirect->with('error', $result->toFlashMessage());
+        } else {
+            $redirect = $redirect->with('warning', $result->toFlashMessage());
+        }
+
+        if ($result->errors !== []) {
+            $redirect = $redirect->with('import_errors', $result->errors);
+        }
+
+        return $redirect;
     }
 
     /**
