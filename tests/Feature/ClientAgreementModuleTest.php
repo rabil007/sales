@@ -3,6 +3,8 @@
 use App\Models\Client;
 use App\Models\ClientAgreement;
 use App\Models\User;
+use App\Support\ClientAgreements\ClientAgreementExportQuery;
+use Illuminate\Http\Request;
 
 test('authenticated user can manage client agreements', function () {
     $this->actingAs(User::factory()->create());
@@ -161,4 +163,81 @@ test('authenticated user can control client agreements pagination size', functio
         ->assertSee('Showing')
         ->assertSee('1')
         ->assertSee('10');
+});
+
+test('authenticated user can export client agreements to excel and pdf', function () {
+    $this->actingAs(User::factory()->create());
+
+    $client = Client::query()->create([
+        'name' => 'ADNOC Offshore',
+        'email' => 'ops@adnoc.test',
+        'phone' => '+971500000001',
+        'company' => 'ADNOC',
+    ]);
+
+    ClientAgreement::query()->create([
+        'client_id' => $client->id,
+        'agreement_ref' => 'OMS-AGR-2026-100',
+        'scope_of_work' => 'Export test agreement.',
+        'duration_days' => 30,
+        'start_date' => '2026-06-01',
+        'end_date' => '2026-06-30',
+        'monthly_invoice_value' => 7500,
+    ]);
+
+    $excelResponse = $this->get(route('client-agreements.export.excel'));
+    $excelResponse->assertOk();
+    expect($excelResponse->headers->get('content-type'))->toContain('spreadsheetml.sheet');
+    expect($excelResponse->headers->get('content-disposition'))->toContain('client-agreements-');
+
+    $pdfResponse = $this->get(route('client-agreements.export.pdf'));
+    $pdfResponse->assertOk();
+    expect($pdfResponse->headers->get('content-type'))->toContain('application/pdf');
+    expect($pdfResponse->headers->get('content-disposition'))->toContain('client-agreements-');
+});
+
+test('client agreement export query respects list filters', function () {
+    $adnoc = Client::query()->create([
+        'name' => 'ADNOC Offshore',
+        'email' => 'ops@adnoc.test',
+        'phone' => '+971500000001',
+        'company' => 'ADNOC',
+    ]);
+
+    $dpWorld = Client::query()->create([
+        'name' => 'DP World',
+        'email' => 'ops@dpworld.test',
+        'phone' => '+971500000002',
+        'company' => 'DP World',
+    ]);
+
+    ClientAgreement::query()->create([
+        'client_id' => $adnoc->id,
+        'agreement_ref' => 'OMS-AGR-2026-201',
+        'scope_of_work' => 'ADNOC export row.',
+        'duration_days' => 30,
+        'start_date' => '2026-01-01',
+        'end_date' => '2026-01-30',
+        'monthly_invoice_value' => 5000,
+    ]);
+
+    ClientAgreement::query()->create([
+        'client_id' => $dpWorld->id,
+        'agreement_ref' => 'OMS-AGR-2026-202',
+        'scope_of_work' => 'DP World export row.',
+        'duration_days' => 30,
+        'start_date' => '2026-02-01',
+        'end_date' => '2026-03-02',
+        'monthly_invoice_value' => 6000,
+    ]);
+
+    $request = Request::create('/', 'GET', [
+        'q' => 'ADNOC',
+        'client_id' => (string) $adnoc->id,
+    ]);
+
+    $results = ClientAgreementExportQuery::fromRequest($request)->get();
+
+    expect($results)->toHaveCount(1)
+        ->and($results->first()->agreement_ref)->toBe('OMS-AGR-2026-201');
 });

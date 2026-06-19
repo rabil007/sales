@@ -10,11 +10,14 @@
             <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
 
             <flux:navbar class="-mb-px max-lg:hidden">
-                <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
+                <flux:navbar.item icon="squares-2x2" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                     {{ __('Dashboard') }}
                 </flux:navbar.item>
                 <flux:navbar.item icon="document-text" :href="route('quotes.index')" :current="request()->routeIs('quotes.*')" wire:navigate>
                     {{ __('Quotes & Agreements') }}
+                </flux:navbar.item>
+                <flux:navbar.item icon="clipboard-document-list" :href="route('client-agreements.index')" :current="request()->routeIs('client-agreements.*')" wire:navigate>
+                    {{ __('Client Agreements') }}
                 </flux:navbar.item>
                 <flux:navbar.item icon="building-office-2" :href="route('clients.index')" :current="request()->routeIs('clients.*')" wire:navigate>
                     {{ __('Clients') }}
@@ -22,8 +25,8 @@
                 <flux:navbar.item icon="user-group" :href="route('ranks.index')" :current="request()->routeIs('ranks.*')" wire:navigate>
                     {{ __('Ranks') }}
                 </flux:navbar.item>
-                <flux:navbar.item icon="cog-6-tooth" :href="route('settings.company.edit')" :current="request()->routeIs('settings.company.*') || request()->routeIs('branding.*')" wire:navigate>
-                    {{ __('Settings') }}
+                <flux:navbar.item icon="swatch" :href="route('settings.company.edit')" :current="request()->routeIs('settings.company.*') || request()->routeIs('branding.*')" wire:navigate>
+                    {{ __('Template Settings') }}
                 </flux:navbar.item>
 
             </flux:navbar>
@@ -41,26 +44,7 @@
             </flux:sidebar.header>
 
             <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')">
-                    <flux:sidebar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard')  }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="document-text" :href="route('quotes.index')" :current="request()->routeIs('quotes.*')" wire:navigate>
-                        {{ __('Quotes & Agreements')  }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="building-office-2" :href="route('clients.index')" :current="request()->routeIs('clients.*')" wire:navigate>
-                        {{ __('Clients')  }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="user-group" :href="route('ranks.index')" :current="request()->routeIs('ranks.*')" wire:navigate>
-                        {{ __('Ranks')  }}
-                    </flux:sidebar.item>
-
-                </flux:sidebar.group>
-                <flux:sidebar.group :heading="__('Settings')">
-                    <flux:sidebar.item icon="document-text" :href="route('settings.company.edit')" :current="request()->routeIs('settings.company.*')" wire:navigate>
-                        {{ __('Template Settings') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+                <x-app-sidebar-nav />
             </flux:sidebar.nav>
 
             <flux:spacer />

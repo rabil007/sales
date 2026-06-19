@@ -61,6 +61,40 @@ select:focus[data-flux-control] {
     @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
 }
 
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
+@layer components {
+    .app-sidebar {
+        --sidebar-accent: rgb(59 130 246);
+    }
+
+    .app-sidebar [data-flux-sidebar-group] > div:first-child > div {
+        @apply px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500;
+    }
+
+    .app-sidebar .app-sidebar-item {
+        @apply !h-10 !rounded-xl !px-3 !text-zinc-400 transition-all duration-200;
+    }
+
+    .app-sidebar .app-sidebar-item:hover {
+        @apply !translate-x-0.5 !bg-white/5 !text-zinc-100;
+    }
+
+    .app-sidebar .app-sidebar-item[data-current] {
+        @apply !border !border-blue-500/20 !bg-blue-500/10 !text-blue-100 shadow-[inset_3px_0_0_0] shadow-blue-500;
+    }
+
+    .app-sidebar .app-sidebar-item[data-current]:hover {
+        @apply !translate-x-0 !text-blue-100;
+    }
+
+    .app-sidebar .app-sidebar-brand [data-content] {
+        @apply text-zinc-100;
+    }
+
+    .app-sidebar-footer [data-flux-sidebar-profile] {
+        @apply w-full rounded-xl border border-transparent px-2 py-2 hover:border-zinc-700/60 hover:bg-zinc-800/60;
+    }
+
+    .app-sidebar-footer [data-flux-sidebar-profile] span {
+        @apply text-zinc-200;
+    }
+}

@@ -21,6 +21,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('quotes/{quote}/expire', [QuoteController::class, 'expire'])->name('quotes.expire');
     Route::post('quotes/{quote}/renew', [QuoteController::class, 'renew'])->name('quotes.renew');
     Route::resource('clients', ClientController::class)->except('show');
+    Route::get('client-agreements/export/excel', [ClientAgreementController::class, 'exportExcel'])->name('client-agreements.export.excel');
+    Route::get('client-agreements/export/pdf', [ClientAgreementController::class, 'exportPdf'])->name('client-agreements.export.pdf');
     Route::resource('client-agreements', ClientAgreementController::class)->except('show');
     Route::resource('ranks', RankController::class)->except('show');
     Route::patch('ranks/{rank}/toggle-status', [RankController::class, 'toggleStatus'])->name('ranks.toggle-status');

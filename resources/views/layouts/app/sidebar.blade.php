@@ -3,47 +3,29 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-zinc-50/50 antialiased dark:bg-linear-to-br dark:from-zinc-900 dark:to-zinc-950">
-        <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200/60 bg-white/60 shadow-[4px_0_24px_rgb(0,0,0,0.02)] backdrop-blur-2xl dark:border-zinc-700/60 dark:bg-zinc-900/60">
-            <flux:sidebar.header>
+    <body class="min-h-screen bg-zinc-50/50 antialiased dark:bg-linear-to-br dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950">
+        <flux:sidebar
+            sticky
+            collapsible="mobile"
+            class="app-sidebar border-e border-zinc-800/60 bg-linear-to-b from-zinc-950 via-zinc-900 to-zinc-950 shadow-[4px_0_40px_rgb(0,0,0,0.35)] backdrop-blur-2xl dark:border-zinc-800/60"
+        >
+            <flux:sidebar.header class="mb-2 border-b border-zinc-800/60 pb-4">
                 <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
                 <flux:sidebar.collapse class="lg:hidden" />
             </flux:sidebar.header>
 
-            <flux:sidebar.nav>
-                <flux:sidebar.group :heading="__('Platform')" class="grid">
-                    <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="document-text" :href="route('quotes.index')" :current="request()->routeIs('quotes.*')" wire:navigate>
-                        {{ __('Quotes & Agreements') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="building-office-2" :href="route('clients.index')" :current="request()->routeIs('clients.*')" wire:navigate>
-                        {{ __('Clients') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="clipboard-document-list" :href="route('client-agreements.index')" :current="request()->routeIs('client-agreements.*')" wire:navigate>
-                        {{ __('Client Agreements') }}
-                    </flux:sidebar.item>
-                    <flux:sidebar.item icon="user-group" :href="route('ranks.index')" :current="request()->routeIs('ranks.*')" wire:navigate>
-                        {{ __('Ranks') }}
-                    </flux:sidebar.item>
-
-                </flux:sidebar.group>
-
-                <flux:sidebar.group :heading="__('Settings')" class="grid">
-                    <flux:sidebar.item icon="document-text" :href="route('settings.company.edit')" :current="request()->routeIs('settings.company.*')" wire:navigate>
-                        {{ __('Template Settings') }}
-                    </flux:sidebar.item>
-                </flux:sidebar.group>
+            <flux:sidebar.nav class="gap-2">
+                <x-app-sidebar-nav />
             </flux:sidebar.nav>
 
             <flux:spacer />
 
-            <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+            <div class="app-sidebar-footer in-data-flux-sidebar-collapsed-desktop:hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-1 shadow-inner shadow-black/20 backdrop-blur-sm">
+                <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
+            </div>
         </flux:sidebar>
 
-        <!-- Mobile User Menu -->
-        <flux:header class="lg:hidden border-b border-zinc-200/60 bg-white/60 backdrop-blur-xl dark:border-zinc-700/60 dark:bg-zinc-900/60">
+        <flux:header class="lg:hidden border-b border-zinc-800/60 bg-zinc-950/80 backdrop-blur-xl">
             <flux:sidebar.toggle class="lg:hidden" icon="bars-2" inset="left" />
 
             <flux:spacer />
@@ -99,9 +81,9 @@
 
         {{ $slot }}
 
-                @include('partials.flash-toasts')
+        @include('partials.flash-toasts')
 
-@persist('toast')
+        @persist('toast')
             <flux:toast.group>
                 <flux:toast />
             </flux:toast.group>

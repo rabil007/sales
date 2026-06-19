@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ClientAgreementRequest;
 use App\Models\Client;
 use App\Models\ClientAgreement;
+use App\Models\CompanySetting;
+use App\Support\ClientAgreements\ClientAgreementExportQuery;
+use App\Support\ClientAgreements\ClientAgreementSpreadsheetExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ClientAgreementController extends Controller
 {
@@ -25,14 +31,7 @@ class ClientAgreementController extends Controller
             $perPage = 15;
         }
 
-        $query = ClientAgreement::query()
-            ->with('client')
-            ->when($q !== '', fn ($builder) => $builder->where(function ($builder) use ($q): void {
-                $builder->where('agreement_ref', 'like', "%{$q}%")
-                    ->orWhere('scope_of_work', 'like', "%{$q}%")
-                    ->orWhereHas('client', fn ($builder) => $builder->where('name', 'like', "%{$q}%"));
-            }))
-            ->when($clientId !== '', fn ($builder) => $builder->where('client_id', (int) $clientId));
+        $query = ClientAgreementExportQuery::fromRequest($request);
 
         $totalCount = (clone $query)->count();
         $activeCount = (clone $query)->whereDate('end_date', '>=', now()->toDateString())->count();
@@ -48,8 +47,33 @@ class ClientAgreementController extends Controller
                 'active' => $activeCount,
                 'totalMonthlyValue' => $totalMonthlyValue,
             ],
-            'agreements' => $query->latest('id')->paginate($perPage)->withQueryString(),
+            'agreements' => (clone $query)->latest('id')->paginate($perPage)->withQueryString(),
         ]);
+    }
+
+    public function exportExcel(Request $request, ClientAgreementSpreadsheetExporter $exporter): StreamedResponse
+    {
+        $this->authorize('viewAny', ClientAgreement::class);
+
+        return $exporter->download(
+            ClientAgreementExportQuery::fromRequest($request),
+            'client-agreements-'.now()->format('Y-m-d').'.xlsx',
+        );
+    }
+
+    public function exportPdf(Request $request): Response
+    {
+        $this->authorize('viewAny', ClientAgreement::class);
+
+        $agreements = ClientAgreementExportQuery::fromRequest($request)->get();
+
+        $pdf = Pdf::loadView('pdf.client-agreements-export', [
+            'agreements' => $agreements,
+            'generatedAt' => now(),
+            'appName' => CompanySetting::get('app_name', config('app.name', 'OMS Sales')),
+        ])->setPaper('a4', 'landscape');
+
+        return $pdf->download('client-agreements-'.now()->format('Y-m-d').'.pdf');
     }
 
     /**

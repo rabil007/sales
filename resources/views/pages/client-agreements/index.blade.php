@@ -5,7 +5,28 @@
                 <flux:heading size="xl" class="font-bold tracking-tight">Client Agreements</flux:heading>
                 <flux:text class="mt-1 text-zinc-500 dark:text-zinc-400">Track client agreements, contract periods, and monthly invoice values.</flux:text>
             </div>
-            <flux:button variant="primary" icon="plus" :href="route('client-agreements.create')" wire:navigate class="rounded-full px-5 transition-transform hover:-translate-y-0.5 hover:shadow-md">New Agreement</flux:button>
+            <div class="flex flex-wrap items-center gap-2">
+                <flux:dropdown position="bottom" align="end">
+                    <flux:button variant="ghost" icon="arrow-down-tray" class="rounded-full px-4">Export</flux:button>
+
+                    <flux:menu>
+                        <flux:menu.item
+                            icon="table-cells"
+                            :href="route('client-agreements.export.excel', request()->only(['q', 'client_id']))"
+                        >
+                            Export Excel
+                        </flux:menu.item>
+                        <flux:menu.item
+                            icon="document-arrow-down"
+                            :href="route('client-agreements.export.pdf', request()->only(['q', 'client_id']))"
+                        >
+                            Export PDF
+                        </flux:menu.item>
+                    </flux:menu>
+                </flux:dropdown>
+
+                <flux:button variant="primary" icon="plus" :href="route('client-agreements.create')" wire:navigate class="rounded-full px-5 transition-transform hover:-translate-y-0.5 hover:shadow-md">New Agreement</flux:button>
+            </div>
         </div>
 
         <div class="grid gap-6 md:grid-cols-3">
