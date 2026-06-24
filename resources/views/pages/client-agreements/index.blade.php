@@ -46,21 +46,50 @@
             </div>
         </div>
 
-        <div class="grid gap-6 md:grid-cols-3">
-            <div class="group relative overflow-hidden rounded-3xl border border-zinc-200/60 bg-gradient-to-b from-white/80 to-white/40 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-zinc-700/60 dark:from-zinc-900/80 dark:to-zinc-900/40">
+        <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {{-- Total Agreements --}}
+            <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}" 
+                @class([
+                    'group relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg',
+                    'border-blue-500 ring-2 ring-blue-500/25 bg-blue-50/5 dark:border-blue-500 dark:ring-blue-500/35' => $status === '',
+                    'border-zinc-200/60 bg-gradient-to-b from-white/80 to-white/40 dark:border-zinc-700/60 dark:from-zinc-900/80 dark:to-zinc-900/40' => $status !== ''
+                ])>
                 <div class="absolute -right-8 -top-8 z-0 h-32 w-32 rounded-full bg-blue-500/10 blur-3xl transition-all duration-500 group-hover:scale-150 group-hover:bg-blue-500/20 dark:bg-blue-400/5"></div>
                 <div class="relative z-10">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Total Agreements</p>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">Total Agreements</p>
                     <p class="mt-2 tabular-nums text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ number_format($stats['total']) }}</p>
                 </div>
-            </div>
-            <div class="group relative overflow-hidden rounded-3xl border border-zinc-200/60 bg-gradient-to-b from-white/80 to-white/40 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-zinc-700/60 dark:from-zinc-900/80 dark:to-zinc-900/40">
+            </a>
+
+            {{-- Active Agreements --}}
+            <a href="{{ request()->fullUrlWithQuery(['status' => 'active']) }}" 
+                @class([
+                    'group relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg',
+                    'border-emerald-500 ring-2 ring-emerald-500/25 bg-emerald-50/5 dark:border-emerald-500 dark:ring-emerald-500/35' => $status === 'active',
+                    'border-zinc-200/60 bg-gradient-to-b from-white/80 to-white/40 dark:border-zinc-700/60 dark:from-zinc-900/80 dark:to-zinc-900/40' => $status !== 'active'
+                ])>
                 <div class="absolute -right-8 -top-8 z-0 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-500/20 dark:bg-emerald-400/5"></div>
                 <div class="relative z-10">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Active Agreements</p>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-555 dark:text-zinc-400">Active Agreements</p>
                     <p class="mt-2 tabular-nums text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ number_format($stats['active']) }}</p>
                 </div>
-            </div>
+            </a>
+
+            {{-- Expired Agreements --}}
+            <a href="{{ request()->fullUrlWithQuery(['status' => 'expired']) }}" 
+                @class([
+                    'group relative overflow-hidden rounded-3xl border p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg',
+                    'border-rose-500 ring-2 ring-rose-500/25 bg-rose-50/5 dark:border-rose-500 dark:ring-rose-500/35' => $status === 'expired',
+                    'border-zinc-200/60 bg-gradient-to-b from-white/80 to-white/40 dark:border-zinc-700/60 dark:from-zinc-900/80 dark:to-zinc-900/40' => $status !== 'expired'
+                ])>
+                <div class="absolute -right-8 -top-8 z-0 h-32 w-32 rounded-full bg-rose-500/10 blur-3xl transition-all duration-500 group-hover:scale-150 group-hover:bg-rose-500/20 dark:bg-rose-400/5"></div>
+                <div class="relative z-10">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-zinc-555 dark:text-zinc-400">Expired Agreements</p>
+                    <p class="mt-2 tabular-nums text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">{{ number_format($stats['expired']) }}</p>
+                </div>
+            </a>
+
+            {{-- Total Monthly Value (USD) --}}
             <div class="group relative overflow-hidden rounded-3xl border border-zinc-200/60 bg-gradient-to-b from-white/80 to-white/40 p-6 shadow-sm backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-lg dark:border-zinc-700/60 dark:from-zinc-900/80 dark:to-zinc-900/40">
                 <div class="absolute -right-8 -top-8 z-0 h-32 w-32 rounded-full bg-violet-500/10 blur-3xl transition-all duration-500 group-hover:scale-150 group-hover:bg-violet-500/20 dark:bg-violet-400/5"></div>
                 <div class="relative z-10">
@@ -71,6 +100,9 @@
         </div>
 
         <form method="GET" class="grid gap-4 rounded-3xl border border-zinc-200/60 bg-white/60 p-6 shadow-sm backdrop-blur-xl md:grid-cols-3 dark:border-zinc-700/60 dark:bg-zinc-900/60">
+            @if ($status !== '')
+                <input type="hidden" name="status" value="{{ $status }}">
+            @endif
             <flux:input name="q" :value="$q" placeholder="Search client, ref, scope..." icon="magnifying-glass" />
             <flux:select name="client_id">
                 <option value="">All Clients</option>
@@ -80,7 +112,7 @@
             </flux:select>
             <div class="flex items-center gap-2">
                 <flux:button type="submit" variant="filled" icon="funnel" class="rounded-full px-4">Filter</flux:button>
-                @if ($q !== '' || $clientId !== '' || $perPage !== 15)
+                @if ($q !== '' || $clientId !== '' || $status !== '' || $perPage !== 15)
                     <flux:button variant="ghost" :href="route('client-agreements.index')" wire:navigate class="rounded-full">Clear</flux:button>
                 @endif
             </div>
@@ -98,13 +130,14 @@
                             <th class="px-4 py-3.5">Duration (days)</th>
                             <th class="px-4 py-3.5">Start Date</th>
                             <th class="px-4 py-3.5">End Date</th>
+                            <th class="px-4 py-3.5">Status</th>
                             <th class="px-4 py-3.5">Monthly Invoice Value (USD)</th>
                             <th class="px-4 py-3.5 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-200/60 dark:divide-zinc-700/60">
                         @forelse ($agreements as $agreement)
-                            <tr class="transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
+                            <tr onclick="window.location='{{ route('client-agreements.show', $agreement) }}'" class="group cursor-pointer transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
                                 <td class="px-4 py-4 tabular-nums text-zinc-600 dark:text-zinc-300">{{ ($agreements->firstItem() ?? 0) + $loop->index }}</td>
                                 <td class="px-4 py-4 font-medium text-zinc-900 dark:text-white">{{ $agreement->client->name }}</td>
                                 <td class="px-4 py-4 text-zinc-600 dark:text-zinc-300">{{ $agreement->agreement_ref }}</td>
@@ -112,9 +145,24 @@
                                 <td class="px-4 py-4 tabular-nums text-zinc-600 dark:text-zinc-300">{{ number_format($agreement->duration_days) }}</td>
                                 <td class="px-4 py-4 tabular-nums text-zinc-600 dark:text-zinc-300">{{ $agreement->start_date->format('d M Y') }}</td>
                                 <td class="px-4 py-4 tabular-nums text-zinc-600 dark:text-zinc-300">{{ $agreement->end_date->format('d M Y') }}</td>
+                                <td class="px-4 py-4">
+                                    @php
+                                        $isExpired = $agreement->end_date->isBefore(today());
+                                    @endphp
+                                    <span @class([
+                                        'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wider ring-1 ring-inset shadow-xs',
+                                        'bg-emerald-50 text-emerald-700 ring-emerald-600/10 dark:bg-emerald-500/10 dark:text-emerald-400 dark:ring-emerald-500/20' => ! $isExpired,
+                                        'bg-rose-50 text-rose-700 ring-rose-600/10 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20' => $isExpired,
+                                    ])>
+                                        {{ $isExpired ? 'Expired' : 'Active' }}
+                                    </span>
+                                </td>
                                 <td class="px-4 py-4 tabular-nums text-zinc-600 dark:text-zinc-300">{{ number_format($agreement->monthly_invoice_value, 2) }}</td>
-                                <td class="px-4 py-4 text-right">
+                                <td class="px-4 py-4 text-right" onclick="event.stopPropagation()">
                                     <div class="flex items-center justify-end gap-1">
+                                        <flux:tooltip content="View Details">
+                                            <flux:button size="sm" icon="eye" variant="ghost" :href="route('client-agreements.show', $agreement)" wire:navigate class="size-8! rounded-full p-0! hover:bg-zinc-100 dark:hover:bg-zinc-800" />
+                                        </flux:tooltip>
                                         <flux:tooltip content="Edit">
                                             <flux:button size="sm" icon="pencil" variant="ghost" :href="route('client-agreements.edit', $agreement)" wire:navigate class="size-8! rounded-full p-0! hover:bg-zinc-100 dark:hover:bg-zinc-800" />
                                         </flux:tooltip>
@@ -133,7 +181,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td class="px-4 py-16 text-center text-zinc-500" colspan="9">
+                                <td class="px-4 py-16 text-center text-zinc-500" colspan="10">
                                     <div class="flex flex-col items-center gap-3">
                                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
                                             <flux:icon.clipboard-document-list class="size-6 opacity-40" />

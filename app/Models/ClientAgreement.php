@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'client_id',
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'start_date',
     'end_date',
     'monthly_invoice_value',
+    'document_path',
 ])]
 class ClientAgreement extends Model
 {
@@ -44,9 +46,9 @@ class ClientAgreement extends Model
     }
 
     /**
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<ClientAgreementCrewLine, $this>
+     * @return HasMany<ClientAgreementCrewLine, $this>
      */
-    public function crewLines(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function crewLines(): HasMany
     {
         return $this->hasMany(ClientAgreementCrewLine::class);
     }

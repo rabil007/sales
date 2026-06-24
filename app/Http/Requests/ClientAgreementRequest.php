@@ -51,6 +51,7 @@ class ClientAgreementRequest extends FormRequest
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
             'monthly_invoice_value' => ['required', 'numeric', 'min:0'],
+            'document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
             'crew_lines' => ['nullable', 'array'],
             'crew_lines.*.rank' => ['nullable', 'string', 'max:255'],
             'crew_lines.*.category' => ['required_with:crew_lines', 'string', 'max:255'],

@@ -12,6 +12,7 @@ class ClientAgreementExportQuery
     {
         $q = $request->string('q')->trim()->toString();
         $clientId = $request->string('client_id')->toString();
+        $status = $request->string('status')->trim()->toString();
 
         return ClientAgreement::query()
             ->with('client')
@@ -21,6 +22,8 @@ class ClientAgreementExportQuery
                     ->orWhereHas('client', fn (Builder $builder) => $builder->where('name', 'like', "%{$q}%"));
             }))
             ->when($clientId !== '', fn (Builder $builder) => $builder->where('client_id', (int) $clientId))
+            ->when($status === 'active', fn (Builder $builder) => $builder->whereDate('end_date', '>=', now()->toDateString()))
+            ->when($status === 'expired', fn (Builder $builder) => $builder->whereDate('end_date', '<', now()->toDateString()))
             ->orderBy('id');
     }
 }

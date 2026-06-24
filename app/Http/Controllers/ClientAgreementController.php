@@ -7,26 +7,27 @@ use App\Http\Requests\ClientAgreementRequest;
 use App\Models\Client;
 use App\Models\ClientAgreement;
 use App\Models\CompanySetting;
+use App\Models\Rank;
 use App\Support\ClientAgreements\ClientAgreementExportQuery;
 use App\Support\ClientAgreements\ClientAgreementSpreadsheetExporter;
 use App\Support\ClientAgreements\ClientAgreementSpreadsheetImporter;
 use App\Support\ClientAgreements\ClientAgreementSpreadsheetTemplateExporter;
+use App\Support\Quotes\CrewLineTotalsCalculator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-
-use App\Models\Rank;
-use App\Support\Quotes\CrewLineTotalsCalculator;
-use Illuminate\Support\Facades\DB;
 
 class ClientAgreementController extends Controller
 {
     public function __construct(
         private CrewLineTotalsCalculator $crewLineTotals,
     ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -36,6 +37,7 @@ class ClientAgreementController extends Controller
 
         $q = $request->string('q')->trim()->toString();
         $clientId = $request->string('client_id')->toString();
+        $status = $request->string('status')->trim()->toString();
         $perPage = (int) $request->integer('per_page', 15);
         if (! in_array($perPage, [10, 15, 25, 50], true)) {
             $perPage = 15;
@@ -43,18 +45,26 @@ class ClientAgreementController extends Controller
 
         $query = ClientAgreementExportQuery::fromRequest($request);
 
-        $totalCount = (clone $query)->count();
-        $activeCount = (clone $query)->whereDate('end_date', '>=', now()->toDateString())->count();
-        $totalMonthlyValue = (clone $query)->sum('monthly_invoice_value');
+        // Calculate stats using a request without the status filter
+        $statsRequest = $request->duplicate();
+        $statsRequest->query->remove('status');
+        $statsQuery = ClientAgreementExportQuery::fromRequest($statsRequest);
+
+        $totalCount = (clone $statsQuery)->count();
+        $activeCount = (clone $statsQuery)->whereDate('end_date', '>=', now()->toDateString())->count();
+        $expiredCount = (clone $statsQuery)->whereDate('end_date', '<', now()->toDateString())->count();
+        $totalMonthlyValue = (clone $statsQuery)->sum('monthly_invoice_value');
 
         return view('pages.client-agreements.index', [
             'q' => $q,
             'clientId' => $clientId,
+            'status' => $status,
             'perPage' => $perPage,
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
             'stats' => [
                 'total' => $totalCount,
                 'active' => $activeCount,
+                'expired' => $expiredCount,
                 'totalMonthlyValue' => $totalMonthlyValue,
             ],
             'agreements' => (clone $query)->latest('id')->paginate($perPage)->withQueryString(),
@@ -141,13 +151,32 @@ class ClientAgreementController extends Controller
 
         DB::transaction(function () use ($request): void {
             $validated = $request->validated();
+
+            if ($request->hasFile('document')) {
+                $validated['document_path'] = $request->file('document')->store('client-agreements', 'public');
+            }
+
             $crewLines = $this->crewLineTotals->normalize($validated['crew_lines'] ?? []);
 
-            $agreement = ClientAgreement::query()->create(collect($validated)->except('crew_lines')->all());
+            $agreement = ClientAgreement::query()->create(collect($validated)->except(['crew_lines', 'document'])->all());
             $agreement->crewLines()->createMany($crewLines);
         });
 
         return redirect()->route('client-agreements.index')->with('status', 'Client agreement created.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(ClientAgreement $clientAgreement): View
+    {
+        $this->authorize('view', $clientAgreement);
+
+        $clientAgreement->load(['client', 'crewLines']);
+
+        return view('pages.client-agreements.show', [
+            'agreement' => $clientAgreement,
+        ]);
     }
 
     /**
@@ -177,9 +206,17 @@ class ClientAgreementController extends Controller
 
         DB::transaction(function () use ($request, $clientAgreement): void {
             $validated = $request->validated();
+
+            if ($request->hasFile('document')) {
+                if ($clientAgreement->document_path) {
+                    Storage::disk('public')->delete($clientAgreement->document_path);
+                }
+                $validated['document_path'] = $request->file('document')->store('client-agreements', 'public');
+            }
+
             $crewLines = $this->crewLineTotals->normalize($validated['crew_lines'] ?? []);
 
-            $clientAgreement->update(collect($validated)->except('crew_lines')->all());
+            $clientAgreement->update(collect($validated)->except(['crew_lines', 'document'])->all());
             $clientAgreement->crewLines()->delete();
             $clientAgreement->crewLines()->createMany($crewLines);
         });

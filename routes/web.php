@@ -25,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('client-agreements/export/pdf', [ClientAgreementController::class, 'exportPdf'])->name('client-agreements.export.pdf');
     Route::get('client-agreements/import/template', [ClientAgreementController::class, 'downloadImportTemplate'])->name('client-agreements.import.template');
     Route::post('client-agreements/import', [ClientAgreementController::class, 'import'])->name('client-agreements.import');
-    Route::resource('client-agreements', ClientAgreementController::class)->except('show');
+    Route::resource('client-agreements', ClientAgreementController::class);
     Route::resource('ranks', RankController::class)->except('show');
     Route::patch('ranks/{rank}/toggle-status', [RankController::class, 'toggleStatus'])->name('ranks.toggle-status');
     Route::get('settings/company', [CompanySettingController::class, 'edit'])->name('settings.company.edit');
