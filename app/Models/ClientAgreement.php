@@ -42,4 +42,12 @@ class ClientAgreement extends Model
     {
         return $this->belongsTo(Client::class);
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<ClientAgreementCrewLine, $this>
+     */
+    public function crewLines(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ClientAgreementCrewLine::class);
+    }
 }

@@ -18,8 +18,15 @@ use Illuminate\Http\Response;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+use App\Models\Rank;
+use App\Support\Quotes\CrewLineTotalsCalculator;
+use Illuminate\Support\Facades\DB;
+
 class ClientAgreementController extends Controller
 {
+    public function __construct(
+        private CrewLineTotalsCalculator $crewLineTotals,
+    ) {}
     /**
      * Display a listing of the resource.
      */
@@ -119,6 +126,8 @@ class ClientAgreementController extends Controller
         return view('pages.client-agreements.form', [
             'agreement' => new ClientAgreement,
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
+            'ranks' => Rank::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'category', 'default_basis', 'default_rate']),
+            'crewLines' => [],
             'isEdit' => false,
         ]);
     }
@@ -130,7 +139,13 @@ class ClientAgreementController extends Controller
     {
         $this->authorize('create', ClientAgreement::class);
 
-        ClientAgreement::query()->create($request->validated());
+        DB::transaction(function () use ($request): void {
+            $validated = $request->validated();
+            $crewLines = $this->crewLineTotals->normalize($validated['crew_lines'] ?? []);
+
+            $agreement = ClientAgreement::query()->create(collect($validated)->except('crew_lines')->all());
+            $agreement->crewLines()->createMany($crewLines);
+        });
 
         return redirect()->route('client-agreements.index')->with('status', 'Client agreement created.');
     }
@@ -142,9 +157,13 @@ class ClientAgreementController extends Controller
     {
         $this->authorize('update', $clientAgreement);
 
+        $clientAgreement->load('crewLines');
+
         return view('pages.client-agreements.form', [
             'agreement' => $clientAgreement,
             'clients' => Client::query()->orderBy('name')->get(['id', 'name']),
+            'ranks' => Rank::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'category', 'default_basis', 'default_rate']),
+            'crewLines' => $clientAgreement->crewLines->toArray(),
             'isEdit' => true,
         ]);
     }
@@ -156,7 +175,14 @@ class ClientAgreementController extends Controller
     {
         $this->authorize('update', $clientAgreement);
 
-        $clientAgreement->update($request->validated());
+        DB::transaction(function () use ($request, $clientAgreement): void {
+            $validated = $request->validated();
+            $crewLines = $this->crewLineTotals->normalize($validated['crew_lines'] ?? []);
+
+            $clientAgreement->update(collect($validated)->except('crew_lines')->all());
+            $clientAgreement->crewLines()->delete();
+            $clientAgreement->crewLines()->createMany($crewLines);
+        });
 
         return redirect()->route('client-agreements.index')->with('status', 'Client agreement updated.');
     }
