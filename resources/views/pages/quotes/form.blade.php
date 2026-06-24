@@ -28,7 +28,7 @@
             @endif
             <input type="hidden" name="client_id" id="client-id-input" value="{{ old('client_id', $quote->client_id) }}">
 
-            <div class="overflow-hidden rounded-3xl border border-zinc-200/60 bg-white/60 shadow-sm backdrop-blur-xl dark:border-zinc-700/60 dark:bg-zinc-900/60">
+            <x-app-form-card class="!p-0">
                 @if ($isLocked)
                     <div class="border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
                         <flux:callout color="amber" icon="lock-closed">
@@ -211,7 +211,7 @@
                     <flux:textarea name="special_conditions" label="Special Conditions" placeholder="Add any special conditions (optional)..." rows="3">{{ old('special_conditions', $quote->special_conditions) }}</flux:textarea>
                 </fieldset>
 
-                <div class="flex items-center justify-between gap-3 border-t border-zinc-200/60 bg-white/40 px-4 py-4 dark:border-zinc-700/60 dark:bg-zinc-900/40 sm:px-6">
+                <x-slot:footer class="justify-between">
                     <flux:button type="button" variant="ghost" icon="arrow-left" id="tab-prev-button">{{ __('Back') }}</flux:button>
                     <p class="text-center text-xs tabular-nums text-zinc-500" id="tab-step-indicator"></p>
                     <div class="flex items-center gap-2">
@@ -220,8 +220,8 @@
                         </flux:button>
                         <flux:button type="button" variant="primary" icon-trailing="arrow-right" id="tab-next-button">{{ __('Next') }}</flux:button>
                     </div>
-                </div>
-            </div>
+                </x-slot:footer>
+            </x-app-form-card>
         </form>
     </div>
 
