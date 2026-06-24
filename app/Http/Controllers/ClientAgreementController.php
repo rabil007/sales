@@ -235,4 +235,15 @@ class ClientAgreementController extends Controller
 
         return redirect()->route('client-agreements.index')->with('status', 'Client agreement deleted.');
     }
+
+    public function downloadDocument(ClientAgreement $clientAgreement): StreamedResponse
+    {
+        $this->authorize('view', $clientAgreement);
+
+        if (! $clientAgreement->document_path || ! Storage::disk('public')->exists($clientAgreement->document_path)) {
+            abort(404);
+        }
+
+        return Storage::disk('public')->response($clientAgreement->document_path);
+    }
 }

@@ -123,7 +123,7 @@
                     <div class="pt-5 border-t border-zinc-150 dark:border-zinc-800">
                         <p class="mb-3.5 text-xs font-extrabold uppercase tracking-wider text-zinc-450 dark:text-zinc-500">Signed Document</p>
                         @if($agreement->document_path)
-                            <a href="{{ \Illuminate\Support\Facades\Storage::url($agreement->document_path) }}" target="_blank"
+                            <a href="{{ route('client-agreements.document', $agreement) }}" target="_blank"
                                class="flex items-center gap-3.5 rounded-lg border border-blue-200/50 bg-blue-50/30 p-3 transition-all hover:bg-blue-50/60 dark:border-blue-900/30 dark:bg-blue-950/20 dark:hover:bg-blue-950/40 group">
                                 <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white shadow-xs transition-transform group-hover:scale-105">
                                     <flux:icon.document-text class="size-5" />
