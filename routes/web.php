@@ -3,6 +3,7 @@
 use App\Http\Controllers\ClientAgreementController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\CompanySettingController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\RankController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('quotes/{quote}/activate', [QuoteController::class, 'activate'])->name('quotes.activate');
     Route::post('quotes/{quote}/expire', [QuoteController::class, 'expire'])->name('quotes.expire');
     Route::post('quotes/{quote}/renew', [QuoteController::class, 'renew'])->name('quotes.renew');
+    Route::post('quotes/{quote}/convert-to-invoice', [InvoiceController::class, 'convertFromQuote'])->name('quotes.convert-to-invoice');
+    Route::resource('invoices', InvoiceController::class);
+    Route::get('invoices/{invoice}/preview-pdf', [InvoiceController::class, 'previewPdf'])->name('invoices.preview-pdf');
+    Route::get('invoices/{invoice}/export-pdf', [InvoiceController::class, 'exportPdf'])->name('invoices.export-pdf');
+    Route::post('invoices/{invoice}/issue', [InvoiceController::class, 'issue'])->name('invoices.issue');
+    Route::post('invoices/{invoice}/mark-paid', [InvoiceController::class, 'markPaid'])->name('invoices.mark-paid');
+    Route::post('invoices/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
     Route::resource('clients', ClientController::class)->except('show');
     Route::get('client-agreements/export/excel', [ClientAgreementController::class, 'exportExcel'])->name('client-agreements.export.excel');
     Route::get('client-agreements/export/pdf', [ClientAgreementController::class, 'exportPdf'])->name('client-agreements.export.pdf');

@@ -6,6 +6,12 @@
                 <flux:text class="mt-1 text-zinc-500 dark:text-zinc-400">Preview uses the exact PDF export template.</flux:text>
             </div>
             <div class="flex items-center gap-2">
+                @if (in_array($quote->status, ['Sent', 'Approved', 'Active'], true))
+                    <form method="POST" action="{{ route('quotes.convert-to-invoice', $quote) }}">
+                        @csrf
+                        <flux:button type="submit" variant="filled" icon="banknotes" class="rounded-full text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300">Convert to Invoice</flux:button>
+                    </form>
+                @endif
                 <flux:button variant="ghost" icon="pencil" :href="route('quotes.edit', $quote)" wire:navigate class="rounded-full">Edit Quote</flux:button>
                 <flux:button variant="primary" icon="printer" :href="route('quotes.export', $quote)" class="rounded-full px-5 transition-transform hover:-translate-y-0.5 hover:shadow-md">Download</flux:button>
             </div>

@@ -69,6 +69,14 @@ class Quote extends Model
     }
 
     /**
+     * @return HasMany<Invoice, $this>
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /**
      * Mark non-expired quotes whose expiry date has passed as Expired.
      */
     public static function markPastExpiryAsExpired(): int

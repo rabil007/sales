@@ -101,6 +101,14 @@
                                 </td>
                                 <td class="px-4 py-4 text-right">
                                     <div class="flex items-center justify-end gap-1" onclick="event.stopPropagation()">
+                                        @if (in_array($quote->status, ['Sent', 'Approved', 'Active'], true))
+                                            <flux:tooltip content="Convert to Invoice">
+                                                <form method="POST" action="{{ route('quotes.convert-to-invoice', $quote) }}" class="inline">
+                                                    @csrf
+                                                    <flux:button type="submit" size="sm" icon="banknotes" variant="ghost" class="size-8! rounded-full p-0! text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/40" />
+                                                </form>
+                                            </flux:tooltip>
+                                        @endif
                                         <flux:tooltip content="Edit">
                                             <flux:button size="sm" icon="pencil" variant="ghost" :href="route('quotes.edit', $quote)" wire:navigate class="size-8! rounded-full p-0! hover:bg-zinc-100 dark:hover:bg-zinc-800" />
                                         </flux:tooltip>

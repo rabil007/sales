@@ -16,6 +16,9 @@
                 <flux:navbar.item icon="document-text" :href="route('quotes.index')" :current="request()->routeIs('quotes.*')" wire:navigate>
                     {{ __('Quotes & Agreements') }}
                 </flux:navbar.item>
+                <flux:navbar.item icon="banknotes" :href="route('invoices.index')" :current="request()->routeIs('invoices.*')" wire:navigate>
+                    {{ __('Invoices') }}
+                </flux:navbar.item>
                 <flux:navbar.item icon="clipboard-document-list" :href="route('client-agreements.index')" :current="request()->routeIs('client-agreements.*')" wire:navigate>
                     {{ __('Client Agreements') }}
                 </flux:navbar.item>

@@ -21,6 +21,12 @@
                     'label' => __('Quotes & Agreements'),
                 ],
                 [
+                    'route' => route('invoices.index'),
+                    'current' => request()->routeIs('invoices.*'),
+                    'icon' => 'banknotes',
+                    'label' => __('Invoices'),
+                ],
+                [
                     'route' => route('client-agreements.index'),
                     'current' => request()->routeIs('client-agreements.*'),
                     'icon' => 'clipboard-document-list',
